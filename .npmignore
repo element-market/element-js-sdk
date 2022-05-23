@@ -1,0 +1,15 @@
+/.idea/
+/test/
+/src/
+/index.ts
+/dist/
+/page/
+/proxy/
+/wallet/
+/config/
+/0x-js/
+/element-ex/
+.eslintignore
+.eslintrc.json
+.gitignore
+.prettierignore

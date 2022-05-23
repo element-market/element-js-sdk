@@ -1,0 +1,6 @@
+/node_modules
+/static/_dist
+/server/_dist
+/static/orders
+/_temp
+/logs

@@ -1,0 +1,48 @@
+{
+  "include": [
+    "./src/**/*",
+    "./index.ts"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./test/**/*",
+    "config/webpack.config.js",
+    "config/webpack.node.config.js"
+  ],
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {},
+    // This must be specified if "paths" is.
+    "outDir": "./lib",
+    "declaration": true,
+    "target": "ES2017",
+    /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
+    "module": "commonjs",
+    /* 增加 type  类型的检查 */
+    "isolatedModules": true,
+    // 支持导入json模块
+    "strict": true,
+    /* Enable all strict type-checking options. */
+    "esModuleInterop": true,
+    /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
+    "skipLibCheck": true,
+    /* Skip type checking of declaration files. */
+    "forceConsistentCasingInFileNames": true,
+    /* Disallow inconsistently-cased references to the same file. */
+    "typeRoots": [
+      "node_modules/@0x/typescript-typings/types",
+      "node_modules/@types"
+    ],
+    "downlevelIteration": true,
+    "lib": [
+      "es5",
+      "dom",
+      "es6",
+      "es2015.promise"
+    ],
+    "noImplicitAny": false,
+    // 不允许隐式的 any 类型
+    "removeComments": true,
+    "resolveJsonModule": true
+  }
+}
