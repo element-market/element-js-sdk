@@ -61,8 +61,8 @@ export interface BaseOrder {
     properties?: Property[];
     nonce: string | number;
     hashNonce: string | number;
-    signatureType: number;
-    v: SignatureType;
+    signatureType: SignatureType;
+    v: number;
     r: string;
     s: string;
     hash?: string;
