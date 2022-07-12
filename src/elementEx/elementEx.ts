@@ -219,10 +219,10 @@ export class ElementEx {
         return await tx.wait(2);
     }
 
-    public async cancelAllOrder(accountAddress: string): Promise<TransactionReceipt>  {
+    public async cancelAllOrders(accountAddress: string): Promise<TransactionReceipt>  {
         const calldata = await this.elementExV3.populateTransaction.incrementHashNonce();
         if (!calldata || !calldata.data) {
-            throw Error('cancelAllOrder, populateTransaction failed.');
+            throw Error('cancelAllOrders, populateTransaction failed.');
         }
         const tx = await this.singers.ethSend({
             from: accountAddress,

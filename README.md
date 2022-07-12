@@ -20,6 +20,7 @@ Published on [GitHub](https://github.com/element-market/element-js-sdk) and [npm
     - [Making Collection-Based Offers](#making-collection-based-offers)
   - [Fetching Orders](#fetching-orders)
   - [Filling Orders](#filling-orders)
+  - [Cancel Orders](#cancel-orders)
 - [Advanced](#advanced)
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Private Auctions](#private-auctions)
@@ -284,6 +285,24 @@ const transactionReceipt = await sdk.fillOrder({
   order: order,
   quantity: quantity
 });
+```
+
+### Cancel Orders
+
+To cancel an order, call `cancelOrder`. Note that only the maker of a given order may cancel it.
+
+```JavaScript
+const { count, orders } = await sdk.queryOrders({ ... });
+const order = orders[0]; // select an order
+const transactionReceipt = await sdk.cancelOrder({
+  order: order
+});
+```
+
+To cancel all orders of the sdk signer, you need to increase a counter named `HashNonce`. To do that, it's just call like below:
+
+```JavaScript
+const transactionReceipt = await sdk.cancelAllOrders();
 ```
 
 ## Advanced

@@ -124,10 +124,10 @@ export class ElementSDK {
         return await this.elementEx.cancelOrder(order.order);
     }
 
-    public async cancelAllOrder(): Promise<TransactionReceipt>  {
+    public async cancelAllOrders(): Promise<TransactionReceipt>  {
         const accountAddress = await this.singers.getCurrentAccount();
-        console.log("cancelAllOrder, account: " + accountAddress);
-        return await this.elementEx.cancelAllOrder(accountAddress);
+        console.log("cancelAllOrders, account: " + accountAddress);
+        return await this.elementEx.cancelAllOrders(accountAddress);
     }
 
     public async queryOrders(query: OrderQuery): Promise<OrderQueryResponse>  {

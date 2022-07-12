@@ -13,8 +13,8 @@ const apiKey = '';
 
 async function test() {
     const sdk = createSDK(privateKeys[0]);
-    const tx = await sdk.cancelAllOrder();
-    console.log("cancelAllOrder, tx: ", tx);
+    const tx = await sdk.cancelAllOrders();
+    console.log("cancelAllOrders, tx: ", tx);
 }
 
 function createSDK(privateKey?: string) {
