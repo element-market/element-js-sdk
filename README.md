@@ -77,7 +77,7 @@ const webpackConfig = {
 
 To get started, first request an API key [here](https://docs.element.market/developer/public-api). 
 
-Then, create a new ElementJS client, using your [ethers](https://docs.ethers.io/v5) web3Provider or singer:
+Then, create a new ElementJS client, using your [ethers](https://docs.ethers.io/v5) web3Provider or signer:
 
 ```JavaScript
 import { ElementSDK, Network } from 'element-js-sdk'
@@ -86,18 +86,18 @@ import { ethers } from 'ethers'
 // In Browser
 // https://docs.ethers.io/v5/getting-started/#getting-started--connecting
 // A Web3Provider wraps a standard Web3 provider, which is what MetaMask injects as window.ethereum into each page.
-const singerOrProvider = new ethers.providers.Web3Provider(window.ethereum); 
+const signerOrProvider = new ethers.providers.Web3Provider(window.ethereum); 
 
 // In Node.js
 // https://docs.ethers.io/v5/api/signer/
 const jsonRpcProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/${providerApiKey}');
-const singerOrProvider = new ethers.Wallet(privateKey, jsonRpcProvider);
+const signerOrProvider = new ethers.Wallet(privateKey, jsonRpcProvider);
 
 const sdk = new ElementSDK({
   // Supported networks: Network.ETH, Network.BSC, Network.Polygon, Network.Avalanche
   networkName: Network.ETH, 
   apiKey: YOUR_API_KEY,
-  signer: singerOrProvider
+  signer: signerOrProvider
 });
 ```
 
