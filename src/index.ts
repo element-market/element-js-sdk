@@ -1,5 +1,5 @@
 import { Network } from './util/chainUtil';
-import { SignerOrProvider, Singers } from './elementEx/singers';
+import { SignerOrProvider, Signers } from './elementEx/signers';
 import { ElementEx } from './elementEx/elementEx';
 import {
     ApiOption,
@@ -57,7 +57,7 @@ export class ElementSDK {
 
     public chainId: number;
     public apiOption: ApiOption;
-    public singers: Singers;
+    public signers: Signers;
     public elementEx: ElementEx;
     public isMainnet: boolean = true;
 
@@ -71,8 +71,8 @@ export class ElementSDK {
             isMainnet: this.isMainnet,
             apiKey: config.apiKey
         }
-        this.singers = new Singers(config.signer, this.chainId, config.gasPrice);
-        this.elementEx = new ElementEx(this.singers);
+        this.signers = new Signers(config.signer, this.chainId, config.gasPrice);
+        this.elementEx = new ElementEx(this.signers);
     }
 
     public async makeSellOrder(params: MakeOrderParams): Promise<OrderResponse> {
@@ -97,7 +97,7 @@ export class ElementSDK {
             throw Error(`fillOrder failed, order.chainId(${order.chainId}) mismatch this.chainId${this.chainId}`);
         }
 
-        const account = await this.singers.getCurrentAccount();
+        const account = await this.signers.getCurrentAccount();
         console.log("fillOrder, currentAccount: " + account);
         return await this.elementEx.fillOrder({
             order: order.order,
@@ -125,7 +125,7 @@ export class ElementSDK {
     }
 
     public async cancelAllOrders(): Promise<TransactionReceipt>  {
-        const accountAddress = await this.singers.getCurrentAccount();
+        const accountAddress = await this.signers.getCurrentAccount();
         console.log("cancelAllOrders, account: " + accountAddress);
         return await this.elementEx.cancelAllOrders(accountAddress);
     }
@@ -144,7 +144,7 @@ export class ElementSDK {
             throw Error('makeOrder failed, unsupported schema : ' + schema);
         }
 
-        const accountAddress = await this.singers.getCurrentAccount();
+        const accountAddress = await this.signers.getCurrentAccount();
         console.log("makeOrder, currentAccount: " + accountAddress);
 
         // query nonce

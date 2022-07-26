@@ -28,7 +28,7 @@ const ERC20_INTERFACE = new Interface(ContractABI.erc20.abi);
 const ERC721_INTERFACE = new Interface(ContractABI.erc721.abi);
 const ERC1155_INTERFACE = new Interface(ContractABI.erc721.abi);
 
-export class Singers {
+export class Signers {
 
     public chainId: number;
     public readProvider: providers.JsonRpcProvider;

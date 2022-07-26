@@ -1,5 +1,5 @@
 import { Contract, ethers } from 'ethers'
-import { Singers } from './singers'
+import { Signers } from './signers'
 import { AssetSchema, SaleKind, Signature, SignatureType } from '../types/elementTypes'
 import { IFillOrderParams, IMakeOrderParams } from '../types/agentTypes'
 import { BigNumber, EIP712TypedData, ETH_TOKEN_ADDRESS, NULL_ADDRESS } from '@txdev/0x-utils'
@@ -22,17 +22,17 @@ export class ElementEx {
     public elementExV3Helper: Contract;
     public feeRecipient: string;
     public exchangeKeeper: string;
-    public singers: Singers;
+    public signers: Signers;
     public WToken: string;
 
-    constructor(singers: Singers) {
-        this.singers = singers;
-        const contracts = ElementEx_V3_CONTRACTS_ADDRESSES[singers.chainId];
+    constructor(signers: Signers) {
+        this.signers = signers;
+        const contracts = ElementEx_V3_CONTRACTS_ADDRESSES[signers.chainId];
         this.WToken = contracts.WToken;
         this.feeRecipient = contracts.FeeRecipient;
         this.exchangeKeeper = contracts.ElementExchangeKeeper;
-        this.elementExV3 = new ethers.Contract(contracts.ElementEx, ContractABI.elementExV3.abi, singers.readProvider);
-        this.elementExV3Helper = new ethers.Contract(contracts.ElementExHelper, ContractABI.elementExV3Helper.abi, singers.readProvider);
+        this.elementExV3 = new ethers.Contract(contracts.ElementEx, ContractABI.elementExV3.abi, signers.readProvider);
+        this.elementExV3Helper = new ethers.Contract(contracts.ElementExHelper, ContractABI.elementExV3Helper.abi, signers.readProvider);
     }
 
     public async makeSellOrder(params: IMakeOrderParams): Promise<NFTOrderInfo> {
@@ -70,7 +70,7 @@ export class ElementEx {
 
         await this.checkAndApproveSellOrder(order);
 
-        const chainId = this.singers.chainId;
+        const chainId = this.signers.chainId;
         const sellOrder = toStandardNFTOrder(order);
         const typedData = getOrderTypedData(sellOrder, chainId);
         const signature = await this.signOrder(typedData);
@@ -118,7 +118,7 @@ export class ElementEx {
 
         await this.checkAndApproveBuyOrder(order);
 
-        const chainId = this.singers.chainId;
+        const chainId = this.signers.chainId;
         const buyOrder = toStandardNFTOrder(order);
         const typedData = getOrderTypedData(buyOrder, chainId);
         const signature = await this.signOrder(typedData);
@@ -181,7 +181,7 @@ export class ElementEx {
         if (!calldata || !calldata.data) {
             throw Error('fillOrder, populateTransaction failed.');
         }
-        const tx = await this.singers.ethSend({
+        const tx = await this.signers.ethSend({
             from: takerAddress,
             to: this.elementExV3.address,
             data: calldata.data,
@@ -211,7 +211,7 @@ export class ElementEx {
         if (!calldata || !calldata.data) {
             throw Error('cancelOrder, populateTransaction failed.');
         }
-        const tx = await this.singers.ethSend({
+        const tx = await this.signers.ethSend({
             from: order.maker,
             to: this.elementExV3.address,
             data: calldata.data
@@ -224,7 +224,7 @@ export class ElementEx {
         if (!calldata || !calldata.data) {
             throw Error('cancelAllOrders, populateTransaction failed.');
         }
-        const tx = await this.singers.ethSend({
+        const tx = await this.signers.ethSend({
             from: accountAddress,
             to: this.elementExV3.address,
             data: calldata.data
@@ -234,7 +234,7 @@ export class ElementEx {
 
     private async signOrder(typedData : EIP712TypedData): Promise<Signature> {
         const maker = typedData.message.maker as string;
-        const typeSignStr = await this.singers.signTypedData(maker, typedData.domain, typedData.types, typedData.message);
+        const typeSignStr = await this.signers.signTypedData(maker, typedData.domain, typedData.types, typedData.message);
         const signer = ethers.utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, typeSignStr);
         if (maker.toLowerCase() !== signer.toLowerCase()) {
             throw Error(`verify EIP712TypedData failed, order.maker : ${maker}, signer = ${signer}`);
@@ -314,11 +314,11 @@ export class ElementEx {
                 throw Error(`makeSellOrder, erc721OwnerCheck failed, make sure account(${order.maker}) is owner of assetId(${order['nftId']}).`);
             }
             if (!r.info.erc721ApprovedCheck) {
-                const tx = await this.singers.approveERC721Proxy(order.maker, order['nft'], this.elementExV3.address);
+                const tx = await this.signers.approveERC721Proxy(order.maker, order['nft'], this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc721 = new ethers.Contract(order['nft'], ContractABI.erc721.abi, this.singers.readProvider);
+                const erc721 = new ethers.Contract(order['nft'], ContractABI.erc721.abi, this.signers.readProvider);
                 const isApproved = await erc721.isApprovedForAll(order.maker, this.elementExV3.address);
                 if (!isApproved) {
                     throw Error("makeSellOrder, ERC721: maker approve to elementEx failed.");
@@ -335,11 +335,11 @@ export class ElementEx {
                  throw Error(`makeSellOrder, erc1155BalanceCheck failed, account(${order.maker}), require erc1155Balance >= quantity`);
             }
             if (!r.info.erc1155ApprovedCheck) {
-                const tx = await this.singers.approveERC1155Proxy(order.maker, order['erc1155Token'], this.elementExV3.address);
+                const tx = await this.signers.approveERC1155Proxy(order.maker, order['erc1155Token'], this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc1155 = new ethers.Contract(order['erc1155Token'], ContractABI.erc1155.abi, this.singers.readProvider);
+                const erc1155 = new ethers.Contract(order['erc1155Token'], ContractABI.erc1155.abi, this.signers.readProvider);
                 const isApproved = await erc1155.isApprovedForAll(order.maker, this.elementExV3.address);
                 if (!isApproved) {
                     throw Error("makeSellOrder, ERC1155: maker approve to elementEx failed.");
@@ -401,11 +401,11 @@ export class ElementEx {
             throw Error(`makeBuyOrder, erc20BalanceCheck failed, make sure account${order.maker} have enough balance of erc20Token(${order.erc20Token}).`);
         }
         if (!r.info.erc20AllowanceCheck && order.erc20Token != NULL_ADDRESS && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
-            const tx = await this.singers.approveERC20Proxy(order.maker, order.erc20Token, this.elementExV3.address);
+            const tx = await this.signers.approveERC20Proxy(order.maker, order.erc20Token, this.elementExV3.address);
             await tx.wait(2);
 
             // recheck approved
-            const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.singers.readProvider);
+            const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.signers.readProvider);
             const allowance = await erc20.allowance(order.maker, this.elementExV3.address);
             if (allowance.lt(r.info.erc20TotalAmount)) {
                 throw Error("makeBuyOrder, ERC20: maker approve to elementEx failed.");
@@ -447,11 +447,11 @@ export class ElementEx {
                 throw Error(`fillOrder, erc721OwnerCheck failed, make sure account(${takerAddress}) is owner of assetId(${assetId}).`);
             }
             if (!r.takerCheckInfo.erc721ApprovedCheck) {
-                const tx = await this.singers.approveERC721Proxy(takerAddress, order.nft, this.elementExV3.address);
+                const tx = await this.signers.approveERC721Proxy(takerAddress, order.nft, this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc721 = new ethers.Contract(order.nft, ContractABI.erc721.abi, this.singers.readProvider);
+                const erc721 = new ethers.Contract(order.nft, ContractABI.erc721.abi, this.signers.readProvider);
                 const isApproved = await erc721.isApprovedForAll(takerAddress, this.elementExV3.address);
                 if (!isApproved) {
                     throw Error("fillOrder, ERC721: taker approve to elementEx failed.");
@@ -483,11 +483,11 @@ export class ElementEx {
                 }
             }
             if (!r.takerCheckInfo.allowanceCheck && order.erc20Token != NULL_ADDRESS && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
-                const tx = await this.singers.approveERC20Proxy(takerAddress, order.erc20Token, this.elementExV3.address);
+                const tx = await this.signers.approveERC20Proxy(takerAddress, order.erc20Token, this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.singers.readProvider);
+                const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.signers.readProvider);
                 const allowance = await erc20.allowance(takerAddress, this.elementExV3.address);
                 if (allowance.lt(r.info.erc20TotalAmount)) {
                     throw Error("fillOrder, ERC20: taker approve to elementEx failed.");
@@ -541,11 +541,11 @@ export class ElementEx {
                 throw Error(`fillOrder, taker sellAmountCheck failed, require erc1155SellAmount <= erc1155RemainingAmount(${r.info.erc1155RemainingAmount.toString()}).`);
             }
             if (!r.takerCheckInfo.erc1155ApprovedCheck) {
-                const tx = await this.singers.approveERC1155Proxy(takerAddress, order.erc1155Token, this.elementExV3.address);
+                const tx = await this.signers.approveERC1155Proxy(takerAddress, order.erc1155Token, this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc1155 = new ethers.Contract(order.erc1155Token, ContractABI.erc1155.abi, this.singers.readProvider);
+                const erc1155 = new ethers.Contract(order.erc1155Token, ContractABI.erc1155.abi, this.signers.readProvider);
                 const isApproved = await erc1155.isApprovedForAll(takerAddress, this.elementExV3.address);
                 if (!isApproved) {
                     throw Error("fillOrder, ERC1155: taker approve to elementEx failed.");
@@ -583,11 +583,11 @@ export class ElementEx {
                 throw Error(`fillOrder, taker buyAmountCheck failed, require erc1155BuyAmount <= erc1155RemainingAmount(${r.info.erc1155RemainingAmount.toString()}).`);
             }
             if (!r.takerCheckInfo.allowanceCheck && order.erc20Token != NULL_ADDRESS && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
-                const tx = await this.singers.approveERC20Proxy(takerAddress, order.erc20Token, this.elementExV3.address);
+                const tx = await this.signers.approveERC20Proxy(takerAddress, order.erc20Token, this.elementExV3.address);
                 await tx.wait(2);
 
                 // recheck approved
-                const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.singers.readProvider);
+                const erc20 = new ethers.Contract(order.erc20Token, ContractABI.erc20.abi, this.signers.readProvider);
                 const allowance = await erc20.allowance(takerAddress, this.elementExV3.address);
                 if (allowance.lt(r.info.erc20TotalAmount)) {
                     throw Error("fillOrder, ERC20: taker approve to elementEx failed.");
