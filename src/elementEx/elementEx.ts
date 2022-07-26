@@ -640,7 +640,7 @@ function getSellOrderExpiry(params: IMakeOrderParams): string {
         return encodeExpiry(SaleKind.FixedPrice, 0, listingTime, expirationTime)
     }
 
-    // 荷兰拍
+    // Dutch Auction
     if (params.saleKind == SaleKind.DutchAuction) {
         const { listingTime, expirationTime } = getOrderTimeOfDutchAuction(params);
         if (!params.endTokenAmount || new BigNumber(params.endTokenAmount).gt(params.startTokenAmount)) {
@@ -650,7 +650,7 @@ function getSellOrderExpiry(params: IMakeOrderParams): string {
         return encodeExpiry(params.saleKind, extra, listingTime, expirationTime);
     }
 
-    // 英拍
+    // English Auction
     if (params.saleKind == SaleKind.EnglishAuction) {
         const { listingTime, expirationTime } = getOrderTimeOfEnglishAuction(params);
         if (!params.endTokenAmount
