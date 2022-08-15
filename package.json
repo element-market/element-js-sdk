@@ -1,6 +1,6 @@
 {
   "name": "element-js-sdk",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Javascript SDK for the www.element.market",
   "main": "lib/index.js",
   "type": "lib/index.d.ts",
@@ -8,15 +8,7 @@
   "license": "MIT",
   "scripts": {
     "publish": "npm publish",
-    "dev:tsc": " -w -p tsconfig.json",
-    "eslint": "eslint --fix src --ext .ts --max-warnings=0",
-    "build:node": "webpack -c config/webpack.node.config.js",
-    "build:web": "webpack -c config/webpack.config.js",
-    "start": "webpack --watch",
-    "dev": "webpack serve --open -c config/webpack.config.js",
-    "link": "sudo npm link element-sdk",
-    "test": "cross-env TS_NODE_PROJECT='test/tsconfig.test.json' mocha test/**/**.test.ts",
-    "cover": "nyc --reporter=html npm run test"
+    "dev:tsc": "tsc -w -p tsconfig.json"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.6.0",
