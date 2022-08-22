@@ -3,7 +3,7 @@ import { OrderSide, OrderRequest, OrderResponse, SaleKind } from '../types/eleme
 import BigNumber from 'bignumber.js';
 
 const API_HOST = "https://api.element.market";
-const API_HOST_TESTNET = "http://172.16.10.79:8067";
+const API_HOST_TESTNET = "https://api-test.element.market";
 const TIME_OUT = 15000;
 
 export interface ApiOption {
@@ -172,8 +172,16 @@ export async function queryCollection(assetAddress: string, option: ApiOption, r
         }
 
         const collection = r.data.data;
-        if (toNumber(collection.royalty) > 0 && !collection.royaltyAddress) {
-            throw Error('queryFees failed, royaltyAddress error!');
+        if (collection.royalty == null || !collection.royaltyAddress) {
+            collection.royalty = 0;
+            collection.royaltyAddress = '';
+        } else {
+            collection.royalty = toNumber(collection.royalty);
+        }
+        if (collection.platformSellerFee == null) {
+            collection.platformSellerFee = 0;
+        } else {
+            collection.platformSellerFee = toNumber(collection.platformSellerFee);
         }
 
         const paymentTokens:PaymentTokens[] = [];
@@ -186,8 +194,8 @@ export async function queryCollection(assetAddress: string, option: ApiOption, r
             }
         }
         const fees = {
-            platformFeePoint: toNumber(collection.elementSellerFee),
-            royaltyFeePoint: toNumber(collection.royalty),
+            platformFeePoint: collection.platformSellerFee,
+            royaltyFeePoint: collection.royalty,
             royaltyFeeAddress: collection.royaltyAddress,
             paymentTokens: paymentTokens
         };
