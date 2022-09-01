@@ -171,7 +171,7 @@ export async function queryCollection(assetAddress: string, option: ApiOption, r
             throw Error('queryFees failed, ' + r.data.msg);
         }
 
-        const collection = r.data.data;
+        const collection = r.data.data.collection;
         if (collection.royalty == null || !collection.royaltyAddress) {
             collection.royalty = 0;
             collection.royaltyAddress = '';
