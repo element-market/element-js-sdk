@@ -173,7 +173,7 @@ export class ElementSDK {
             royaltyFeePoint: collection.royaltyFeePoint,
             royaltyFeeAddress: collection.royaltyFeeAddress,
             listingTime: toNumber(params.listingTime),
-            expirationTime: toNumber(params.listingTime),
+            expirationTime: toNumber(params.expirationTime),
             nonce: nonce,
             saleKind: params.saleKind,
             endTokenAmount: params.endTokenAmount
