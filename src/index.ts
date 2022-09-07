@@ -1,5 +1,5 @@
 import { Network } from './util/chainUtil';
-import { SignerOrProvider, Signers } from './elementEx/signers';
+import { IGasParams, SignerOrProvider, Signers } from './elementEx/signers'
 import { ElementEx } from './elementEx/elementEx';
 import {
     ApiOption,
@@ -23,11 +23,10 @@ export interface ElementAPIConfig {
     networkName: Network;
     apiKey: string;
     signer: SignerOrProvider;
-    gasPrice?: string | number;
     isTestnet?: boolean;
 }
 
-export interface MakeOrderParams {
+export interface MakeOrderParams extends IGasParams {
     takerAddress?: string;
     assetId?: string | number;
     assetAddress: string;
@@ -41,14 +40,14 @@ export interface MakeOrderParams {
     endTokenAmount?: string | number;
 }
 
-export interface FillOrderParams {
+export interface FillOrderParams extends IGasParams {
     order?: OrderResponse;
     orderJsonStr?: string;
     quantity?: string | number;
     assetId?: string | number;
 }
 
-export interface CancelOrderParams {
+export interface CancelOrderParams extends IGasParams {
     order?: OrderResponse;
     orderJsonStr?: string;
 }
@@ -71,7 +70,7 @@ export class ElementSDK {
             isMainnet: this.isMainnet,
             apiKey: config.apiKey
         }
-        this.signers = new Signers(config.signer, this.chainId, config.gasPrice);
+        this.signers = new Signers(config.signer, this.chainId);
         this.elementEx = new ElementEx(this.signers);
     }
 
@@ -105,7 +104,7 @@ export class ElementSDK {
             takerAddress: account,
             quantity: params.quantity,
             assetId: params.assetId
-        });
+        }, params);
     }
 
     public async cancelOrder(params: CancelOrderParams): Promise<TransactionReceipt> {
@@ -121,13 +120,13 @@ export class ElementSDK {
         if (order.chainId != this.chainId) {
             throw Error(`cancelOrder failed, order.chainId(${order.chainId}) mismatch this.chainId${this.chainId}`);
         }
-        return await this.elementEx.cancelOrder(order.order);
+        return await this.elementEx.cancelOrder(order.order, params);
     }
 
-    public async cancelAllOrders(): Promise<TransactionReceipt>  {
+    public async cancelAllOrders(params?: IGasParams): Promise<TransactionReceipt>  {
         const accountAddress = await this.signers.getCurrentAccount();
         console.log("cancelAllOrders, account: " + accountAddress);
-        return await this.elementEx.cancelAllOrders(accountAddress);
+        return await this.elementEx.cancelAllOrders(accountAddress, params);
     }
 
     public async queryOrders(query: OrderQuery): Promise<OrderQueryResponse>  {
@@ -179,8 +178,8 @@ export class ElementSDK {
             endTokenAmount: params.endTokenAmount
         };
         const orderInfo = buyOrder
-          ? await this.elementEx.makeBuyOrder(orderParams)
-          : await this.elementEx.makeSellOrder(orderParams);
+          ? await this.elementEx.makeBuyOrder(orderParams, params)
+          : await this.elementEx.makeSellOrder(orderParams, params);
 
         // post order
         const order = toRequestOrder(orderInfo);

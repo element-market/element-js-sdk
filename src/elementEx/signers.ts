@@ -7,7 +7,13 @@ import { TypedDataSigner } from '@ethersproject/abstract-signer/src.ts/index';
 
 export type SignerOrProvider = Signer | ethers.providers.Web3Provider;
 
-export interface LimitedCallSpec {
+export interface IGasParams {
+    gasPrice?: string | number;
+    maxFeePerGas?: string | number;
+    maxPriorityFeePerGas?: string | number;
+}
+
+export interface LimitedCallSpec extends IGasParams {
     from: string;
     to: string;
     data: string;
@@ -33,9 +39,8 @@ export class Signers {
     public chainId: number;
     public readProvider: providers.JsonRpcProvider;
     public signer: SignerOrProvider;
-    public gasPrice?: string | number;
 
-    constructor(signer: SignerOrProvider, chainId: number, gasPrice?: string | number) {
+    constructor(signer: SignerOrProvider, chainId: number) {
         if (!RPC_READ_PROVIDERS[chainId]) {
             throw Error("Unsupported chainId : " + chainId);
         }
@@ -46,7 +51,6 @@ export class Signers {
         }
         this.signer = signer;
         this.chainId = chainId;
-        this.gasPrice = gasPrice;
         this.readProvider = new ethers.providers.JsonRpcProvider(RPC_READ_PROVIDERS[chainId]);
     }
 
@@ -77,10 +81,13 @@ export class Signers {
         }
 
         const signer = await this.getSigner(call.from);
-        if (!(signer.provider instanceof ethers.providers.Web3Provider)) {
-            if (this.gasPrice != undefined) {
-                transactionObject.gasPrice = ethers.BigNumber.from(this.gasPrice);
-            } else {
+        if (call.maxFeePerGas && call.maxPriorityFeePerGas) {
+            transactionObject.maxFeePerGas = ethers.BigNumber.from(call.maxFeePerGas);
+            transactionObject.maxPriorityFeePerGas = ethers.BigNumber.from(call.maxPriorityFeePerGas);
+        } else if (call.gasPrice) {
+            transactionObject.gasPrice = ethers.BigNumber.from(call.gasPrice);
+        } else {
+            if (!(signer.provider instanceof ethers.providers.Web3Provider)) {
                 const gasPrice = await this.readProvider.getGasPrice();
                 if (gasPrice) {
                     transactionObject.gasPrice = gasPrice;
@@ -130,7 +137,7 @@ export class Signers {
         }
     }
 
-    public async approveERC20Proxy(fromAddress: string, erc20Address: string, approvedAddress: string, allowance?: string): Promise<TransactionResponse> {
+    public async approveERC20Proxy(fromAddress: string, erc20Address: string, approvedAddress: string, gasParams: IGasParams, allowance?: string): Promise<TransactionResponse> {
         const quantity = allowance || ethers.constants.MaxInt256.toString();
         const call = this.getCallData({
             from: fromAddress,
@@ -139,10 +146,15 @@ export class Signers {
             methodsName: 'approve',
             params: [approvedAddress, quantity]
         });
+        if (gasParams) {
+            call.gasPrice = gasParams.gasPrice;
+            call.maxFeePerGas = gasParams.maxFeePerGas;
+            call.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
+        }
         return this.ethSend(call);
     }
 
-    public async approveERC721Proxy(fromAddress: string, erc721Address: string, approvedAddress: string, approved = true): Promise<TransactionResponse> {
+    public async approveERC721Proxy(fromAddress: string, erc721Address: string, approvedAddress: string, gasParams: IGasParams, approved = true): Promise<TransactionResponse> {
         const call = this.getCallData({
             from: fromAddress,
             to: erc721Address,
@@ -150,10 +162,15 @@ export class Signers {
             methodsName: 'setApprovalForAll',
             params: [approvedAddress, approved]
         });
+        if (gasParams) {
+            call.gasPrice = gasParams.gasPrice;
+            call.maxFeePerGas = gasParams.maxFeePerGas;
+            call.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
+        }
         return this.ethSend(call);
     }
 
-    public async approveERC1155Proxy(fromAddress: string, erc1155Address: string, approvedAddress: string, approved = true): Promise<TransactionResponse> {
+    public async approveERC1155Proxy(fromAddress: string, erc1155Address: string, approvedAddress: string, gasParams: IGasParams, approved = true): Promise<TransactionResponse> {
         const call = this.getCallData({
             from: fromAddress,
             to: erc1155Address,
@@ -161,6 +178,11 @@ export class Signers {
             methodsName: 'setApprovalForAll',
             params: [approvedAddress, approved]
         });
+        if (gasParams) {
+            call.gasPrice = gasParams.gasPrice;
+            call.maxFeePerGas = gasParams.maxFeePerGas;
+            call.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
+        }
         return this.ethSend(call);
     }
 

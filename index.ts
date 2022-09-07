@@ -1,5 +1,5 @@
 export { Network } from './src/util/chainUtil';
-export type { SignerOrProvider } from './src/elementEx/signers'
+export type { SignerOrProvider, IGasParams } from './src/elementEx/signers'
 export { OrderSide, SaleKind, SignatureType, AssetSchema } from './src/types/elementTypes';
 export type { OrderResponse } from './src/types/elementTypes';
 export type { OrderQuery, OrderQueryResponse } from './src/api/openApi';
