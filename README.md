@@ -309,6 +309,27 @@ const transactionReceipt = await sdk.cancelAllOrders();
 
 Interested in purchasing for scheduling future orders, or private auctions, element.js can help with that.
 
+### User-defined GasPrice
+
+You can set `maxFeePerGas` and `maxPriorityFeePerGas`(EIP-1559), or just set `gasPrice`.
+
+```JavaScript
+const transactionReceipt = await sdk.fillOrder({
+  order: order,
+  maxFeePerGas: 21e9,       // string or number.
+  maxPriorityFeePerGas: 2e9 // string or number.
+});
+```
+
+```JavaScript
+const transactionReceipt = await sdk.fillOrder({
+  order: order,
+  gasPrice: '30000000000', // string or number.
+});
+```
+
+Supported methods: `fillOrder`, `cancelOrder`, `cancelAllOrders`, `makeSellOrder`, `makeBuyOrder`.
+
 ### Scheduling Future Listings
 
 You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your sdk instance:
