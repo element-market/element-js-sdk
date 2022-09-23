@@ -22,7 +22,7 @@ Published on [GitHub](https://github.com/element-market/element-js-sdk) and [npm
   - [Filling Orders](#filling-orders)
   - [Cancel Orders](#cancel-orders)
 - [Advanced](#advanced)
-  - [User-defined GasPrice](#user-defined-gasprice)
+  - [User-Defined GasPrice](#user-defined-gasprice)
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Private Auctions](#private-auctions)
 - [Learning More](#learning-more)
@@ -310,7 +310,7 @@ const transactionReceipt = await sdk.cancelAllOrders();
 
 Interested in purchasing for scheduling future orders, or private auctions, element.js can help with that.
 
-### User-defined GasPrice
+### User-Defined GasPrice
 
 You can set `maxFeePerGas` and `maxPriorityFeePerGas`(EIP-1559), or just set `gasPrice`.
 
