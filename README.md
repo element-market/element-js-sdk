@@ -22,6 +22,7 @@ Published on [GitHub](https://github.com/element-market/element-js-sdk) and [npm
   - [Filling Orders](#filling-orders)
   - [Cancel Orders](#cancel-orders)
 - [Advanced](#advanced)
+  - [User-defined GasPrice](#user-defined-gasprice)
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Private Auctions](#private-auctions)
 - [Learning More](#learning-more)
