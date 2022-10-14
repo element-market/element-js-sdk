@@ -7,7 +7,7 @@ export enum Network {
 
 const CHAIN_NAMES: { [key: number]: string } = {
     1: Network.ETH,
-    4: Network.ETH,
+    5: Network.ETH,
     56: Network.BSC,
     97: Network.BSC,
     137: Network.Polygon,
@@ -27,7 +27,7 @@ export function getChainId(chain: any, isMainnet: boolean): number {
     if (chain) {
         switch (chain.toString()) {
             case Network.ETH:
-                return isMainnet ? 1 : 4;
+                return isMainnet ? 1 : 5;
 
             case Network.BSC:
                 return isMainnet ? 56 : 97;

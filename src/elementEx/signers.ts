@@ -22,7 +22,7 @@ export interface LimitedCallSpec extends IGasParams {
 
 const RPC_READ_PROVIDERS: { [key: number]: string } = {
     1: 'https://api.element.market/api/v1/jsonrpc',
-    4: 'https://api-test.element.market/api/v1/jsonrpc',
+    5: 'https://api-test.element.market/api/goerli/jsonrpc',
     56: 'https://api.element.market/api/bsc/jsonrpc',
     97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
     137: 'https://api.element.market/api/polygon/jsonrpc',

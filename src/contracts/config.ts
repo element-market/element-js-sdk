@@ -7,11 +7,11 @@ export const ElementEx_V3_CONTRACTS_ADDRESSES = {
         'ElementExHelper': "0x42C759a719C228050901299b88FD316C3a050617",
         "WToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
-    4: {
-        "ElementEx": "0x8D6022B8A421B08E9E4cEf45E46f1c83C85d402F",
-        "ElementExchangeKeeper": "0x3a03626E7Ec4a4Cfbb5f240D77Dc72AAcfD83ebf",
-        'ElementExHelper': "0xA8612dCc1B4e3aA1e039B4077CfE9093A7f452b8",
-        'WToken': '0xc778417e063141139fce010982780140aa0cd5ab'
+    5: {
+        "ElementEx": "0x7Fed7eD540c0731088190fed191FCF854ed65Efa",
+        "ElementExchangeKeeper": "0x0000000000000000000000000000000000000000",
+        'ElementExHelper': "0xcF5f239B03aA88862D907ADEf913D5cce516Bb28",
+        'WToken': '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6'
     },
     56: {
         "ElementEx": "0xb3e3DfCb2d9f3DdE16d78B9e6EB3538Eb32B5ae1",
