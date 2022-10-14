@@ -169,6 +169,7 @@ export class ElementSDK {
             paymentToken: paymentToken,
             startTokenAmount: params.startTokenAmount,
             platformFeePoint: collection.platformFeePoint,
+            platformFeeAddress: collection.platformFeeAddress,
             royaltyFeePoint: collection.royaltyFeePoint,
             royaltyFeeAddress: collection.royaltyFeeAddress,
             listingTime: toNumber(params.listingTime),

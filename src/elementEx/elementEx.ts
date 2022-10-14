@@ -20,7 +20,6 @@ export class ElementEx {
 
     public elementExV3: Contract;
     public elementExV3Helper: Contract;
-    public feeRecipient: string;
     public exchangeKeeper: string;
     public signers: Signers;
     public WToken: string;
@@ -29,7 +28,6 @@ export class ElementEx {
         this.signers = signers;
         const contracts = ElementEx_V3_CONTRACTS_ADDRESSES[signers.chainId];
         this.WToken = contracts.WToken;
-        this.feeRecipient = contracts.FeeRecipient;
         this.exchangeKeeper = contracts.ElementExchangeKeeper;
         this.elementExV3 = new ethers.Contract(contracts.ElementEx, ContractABI.elementExV3.abi, signers.readProvider);
         this.elementExV3Helper = new ethers.Contract(contracts.ElementExHelper, ContractABI.elementExV3Helper.abi, signers.readProvider);
@@ -622,9 +620,9 @@ export class ElementEx {
     private calcFees(params: IMakeOrderParams): Fee[] {
         const fees: Fee[] = [];
         const totalAmount = new BigNumber(params.startTokenAmount);
-        if (params.platformFeePoint > 0) {
+        if (params.platformFeePoint > 0 && params.platformFeeAddress) {
             fees.push({
-                recipient: this.feeRecipient,
+                recipient: params.platformFeeAddress,
                 amount: totalAmount.times(params.platformFeePoint).div(10000).toFixed(0, BigNumber.ROUND_DOWN),
                 feeData: "0x"
             });

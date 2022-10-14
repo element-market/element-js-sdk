@@ -9,6 +9,7 @@ export interface IMakeOrderParams {
     paymentToken: string;
     startTokenAmount: string | number;
     platformFeePoint: number;
+    platformFeeAddress?: string;
     royaltyFeePoint: number;
     royaltyFeeAddress?: string;
     listingTime?: number;

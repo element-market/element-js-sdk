@@ -19,6 +19,7 @@ export interface PaymentTokens {
 
 export interface Collection {
     platformFeePoint: number;
+    platformFeeAddress?: string;
     royaltyFeePoint: number;
     royaltyFeeAddress?: string;
     paymentTokens: PaymentTokens[];
@@ -178,8 +179,9 @@ export async function queryCollection(assetAddress: string, option: ApiOption, r
         } else {
             collection.royalty = toNumber(collection.royalty);
         }
-        if (collection.platformSellerFee == null) {
+        if (collection.platformSellerFee == null || !collection.platformSellerAddress) {
             collection.platformSellerFee = 0;
+            collection.platformSellerAddress = '';
         } else {
             collection.platformSellerFee = toNumber(collection.platformSellerFee);
         }
@@ -195,6 +197,7 @@ export async function queryCollection(assetAddress: string, option: ApiOption, r
         }
         const fees = {
             platformFeePoint: collection.platformSellerFee,
+            platformFeeAddress: collection.platformSellerAddress,
             royaltyFeePoint: collection.royalty,
             royaltyFeeAddress: collection.royaltyAddress,
             paymentTokens: paymentTokens
