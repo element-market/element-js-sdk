@@ -33,7 +33,7 @@ This is the JavaScript SDK for [element.market](https://www.element.market/), a 
 
 It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**listings**), and complete trades programmatically.
 
-You get started by [requesting an API key](https://docs.element.market/developer/public-api) and instantiating your own sdk. Then you can create orders off-chain or fulfill orders on-chain.
+You get started by [requesting an API key](https://element.readme.io/reference/api-overview) and instantiating your own sdk. Then you can create orders off-chain or fulfill orders on-chain.
 
 ## Installation
 
@@ -76,7 +76,7 @@ const webpackConfig = {
 
 ## Getting Started
 
-To get started, first request an API key [here](https://docs.element.market/developer/public-api). 
+To get started, first request an API key [here](https://element.readme.io/reference/api-overview). 
 
 Then, create a new ElementJS client, using your [ethers](https://docs.ethers.io/v5) web3Provider or signer:
 
@@ -240,8 +240,8 @@ interface OrderQuery {
   // or offered by the order, Eth and other primary chain currencies are 0x0000000000000000000000000000000000000000
   payment_token?: string;
   // How to sort the orders. Can be created_date for when they were made,
-  // or eth_price to see the lowest-priced orders first (converted to their ETH values).
-  // eth_price is only supported when asset_contract_address and token_id are also defined.
+  // or base_price to see the lowest-priced orders first. use with direction,
+  // created_date is default.
   order_by?: string;
   // Can be asc or desc for ascending or descending sort. Default value : desc
   direction?: string;
