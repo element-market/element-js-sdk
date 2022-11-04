@@ -1,44 +1,379 @@
 {
-  "contractName": "ElementExHelper",
-  "sourceName": "contracts/element/ElementExHelper.sol",
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IAggTraderHelper",
+  "sourceName": "contracts/helper/IAggTraderHelper.sol",
   "abi": [
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "elementEx",
+          "name": "account",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "weth",
+          "name": "operator",
           "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
         }
       ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [],
-      "name": "ELEMENT_EX",
+      "name": "checkAssets",
       "outputs": [
         {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "itemType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "allowance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IAssetCheckerFeature.AssetCheckResultInfo[]",
+          "name": "infos",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "WETH",
-      "outputs": [
+      "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "account",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8[]",
+          "name": "itemTypes",
+          "type": "uint8[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "checkAssetsEx",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "itemType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "allowance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IAssetCheckerFeature.AssetCheckResultInfo[]",
+          "name": "infos",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "maker",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "listingTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expirationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startNonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "paymentToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "platformFeeRecipient",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "nftAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "platformFee",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "royaltyFee",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "royaltyFeeRecipient",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "erc20TokenAmount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "nftId",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSOrderItem[]",
+                  "name": "items",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSCollection[]",
+              "name": "basicCollections",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "nftAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "platformFee",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "royaltyFee",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "royaltyFeeRecipient",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "erc20TokenAmount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "nftId",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSOrderItem[]",
+                  "name": "items",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSCollection[]",
+              "name": "collections",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint8",
+              "name": "v",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "r",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "s",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSERC721Orders",
+          "name": "order",
+          "type": "tuple"
+        }
+      ],
+      "name": "checkBSERC721Orders",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "orderHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hashNonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "validSignature",
+              "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "isApprovedForAll",
+                  "type": "bool"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "bool",
+                      "name": "isNonceValid",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isERC20AmountValid",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "ownerOfNftId",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "approvedAccountOfNftId",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSOrderItemCheckResult[]",
+                  "name": "items",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSCollectionCheckResult[]",
+              "name": "basicCollections",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "isApprovedForAll",
+                  "type": "bool"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "bool",
+                      "name": "isNonceValid",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isERC20AmountValid",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "ownerOfNftId",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "approvedAccountOfNftId",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSOrderItemCheckResult[]",
+                  "name": "items",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSCollectionCheckResult[]",
+              "name": "collections",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct IBatchSignedERC721OrdersCheckerFeature.BSERC721OrdersCheckResult",
+          "name": "r",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -253,7 +588,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155BuyOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155BuyOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -295,7 +630,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155BuyOrderTakerCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155BuyOrderTakerCheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         }
@@ -539,7 +874,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155BuyOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155BuyOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -581,7 +916,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155BuyOrderTakerCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155BuyOrderTakerCheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         },
@@ -776,7 +1111,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155SellOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155SellOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -823,7 +1158,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155SellOrderTakerCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155SellOrderTakerCheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         }
@@ -1040,7 +1375,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155SellOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155SellOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -1087,7 +1422,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC1155SellOrderTakerCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC1155SellOrderTakerCheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         },
@@ -1289,7 +1624,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721BuyOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721BuyOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -1321,7 +1656,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721CheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721CheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         }
@@ -1545,7 +1880,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721BuyOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721BuyOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -1577,7 +1912,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721CheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721CheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         },
@@ -1747,7 +2082,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721SellOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721SellOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -1784,7 +2119,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC20CheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC20CheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         }
@@ -1976,7 +2311,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC721SellOrderCheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC721SellOrderCheckInfo",
           "name": "info",
           "type": "tuple"
         },
@@ -2013,7 +2348,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ElementExHelper.ERC20CheckInfo",
+          "internalType": "struct IElementExCheckerFeature.ERC20CheckInfo",
           "name": "takerCheckInfo",
           "type": "tuple"
         },
@@ -2156,45 +2491,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "erc1155",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "approvedAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getERC1155Info",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "balance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "isApprovedForAll",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "components": [
             {
               "internalType": "address",
@@ -2305,40 +2601,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "erc20",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "allowanceAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getERC20Info",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "balance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "allowance",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "components": [
             {
               "internalType": "address",
@@ -2431,50 +2693,6 @@
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "erc721",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "approvedAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getERC721Info",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "isApprovedForAll",
-          "type": "bool"
-        },
-        {
-          "internalType": "address",
-          "name": "approvedAccount",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -2590,6 +2808,442 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accountNonce",
+          "type": "uint256"
+        }
+      ],
+      "name": "getLooksRareCheckInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "transferManager",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isApprovedForAll",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "erc1155Balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isExecutedOrCancelled",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IThirdExchangeCheckerFeature.LooksRareCheckInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "itemType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accountNonce",
+          "type": "uint256"
+        }
+      ],
+      "name": "getLooksRareCheckInfoEx",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "transferManager",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isApprovedForAll",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "erc1155Balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isExecutedOrCancelled",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IThirdExchangeCheckerFeature.LooksRareCheckInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "tokenType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "tokenAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ISDKApproveCheckerFeature.SDKApproveInfo[]",
+          "name": "list",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "getSDKApprovalsAndCounter",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "approvals",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "elementCounter",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "seaportCounter",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "conduitKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "orderHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getSeaportCheckInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "conduit",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "conduitExists",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isApprovedForAll",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "erc1155Balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isValidated",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isCancelled",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalFilled",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSize",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IThirdExchangeCheckerFeature.SeaportCheckInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "itemType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "conduitKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "orderHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getSeaportCheckInfoEx",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "conduit",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "conduitExists",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isApprovedForAll",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "erc1155Balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isValidated",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isCancelled",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalFilled",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSize",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IThirdExchangeCheckerFeature.SeaportCheckInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "orderHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "executionDelegate",
+          "type": "address"
+        }
+      ],
+      "name": "getX2y2CheckInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "erc721Owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isApprovedForAll",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "erc721ApprovedAccount",
+              "type": "address"
+            },
+            {
+              "internalType": "enum IX2y2.InvStatus",
+              "name": "status",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct IThirdExchangeCheckerFeature.X2y2CheckInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "nonce",
           "type": "uint256"
@@ -2625,6 +3279,232 @@
           "internalType": "bool",
           "name": "filled",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ens",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "nodes",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "queryENSInfosByNode",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "resolver",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "domainAddr",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "available",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IENSHelperFeature.ENSQueryResult[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "ens",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "queryENSInfosByToken",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "resolver",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "domainAddr",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "available",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IENSHelperFeature.ENSQueryResult[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ens",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "addresses",
+          "type": "address[]"
+        }
+      ],
+      "name": "queryENSReverseInfos",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "resolver",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "domain",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address",
+              "name": "verifyResolver",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "verifyAddr",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IENSHelperFeature.ENSReverseResult[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "resolver",
+          "type": "address"
+        },
+        {
+          "internalType": "string[]",
+          "name": "names",
+          "type": "string[]"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "secrets",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "durations",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "querySpaceIdInfos",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "minCommitAge",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxCommitAge",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "base",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "premium",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "available",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "commitHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "commitTimestamp",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct ISpaceIdHelperFeature.SpaceIdItem[]",
+              "name": "items",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct ISpaceIdHelperFeature.SpaceIdInfos",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -3114,5 +3994,9 @@
       "stateMutability": "view",
       "type": "function"
     }
-  ]
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
 }

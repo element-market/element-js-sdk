@@ -1,10 +1,36 @@
-export { Network } from './src/util/chainUtil';
-export type { SignerOrProvider, IGasParams } from './src/elementEx/signers'
-export { OrderSide, SaleKind, SignatureType, AssetSchema } from './src/types/elementTypes';
-export type { OrderResponse } from './src/types/elementTypes';
-export type { OrderQuery, OrderQueryResponse } from './src/api/openApi';
-export type { ElementAPIConfig, MakeOrderParams, FillOrderParams, CancelOrderParams } from './src/index';
-export { ElementSDK } from './src/index';
-export { NULL_ADDRESS } from '@txdev/0x-utils';
-export { ETH_TOKEN_ADDRESS } from '@txdev/0x-utils/lib/src/types';
-export type { TransactionReceipt } from '@ethersproject/abstract-provider';
+export { ElementSDK } from './src/index'
+export { ethers, providers, Signer, BigNumber } from 'ethers'
+export type { TransactionResponse, TransactionReceipt } from '@ethersproject/abstract-provider'
+
+export {
+    NULL_ADDRESS,
+    ETH_TOKEN_ADDRESS,
+    Network,
+    OrderSide,
+    SaleKind,
+    Standard,
+    Market
+} from './src/types/types'
+
+export type {
+    SignerOrProvider,
+    ElementAPIConfig,
+    OrderInformation,
+    Order,
+    OrderDetail,
+    GasParams,
+    ERC721SellOrderItem,
+    MakeERC721SellOrdersParams,
+    FailedERC721Item,
+    MakeERC721SellOrdersResponse,
+    MakeOrderParams,
+    FillOrderParams,
+    BatchBuyWithETHParams,
+    CancelOrderParams,
+    CancelOrdersParams,
+    CancelOrdersResponse,
+    CancelAllOrdersByMakerParams
+} from './src/types/types'
+
+export { RPC_URLS } from './src/contracts/config'
+export { getChain, getChainId } from './src/util/chainUtil'
