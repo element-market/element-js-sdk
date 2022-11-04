@@ -217,7 +217,7 @@ import { ElementSDK } from 'element-js-sdk'
 
 const orders = await sdk.queryOrders({
   asset_contract_address: assetAddress,
-  token_id: assetId
+  token_ids: [assetId]
 });
 ```
 
