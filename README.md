@@ -308,7 +308,7 @@ To cancel all orders of the signer, call `cancelAllOrdersForSigner`:
 
 ```JavaScript
 const transaction = await sdk.cancelAllOrdersForSigner({
-  // Supported networks: Standard.ElementEx, Standard.Seaport, Standard.LooksRare
+  // Supported Standard: Standard.ElementEx, Standard.Seaport, Standard.LooksRare
   standard: Standard.ElementEx
 });
 const receipt = await transaction.wait()
