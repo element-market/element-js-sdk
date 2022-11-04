@@ -1,0 +1,141 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IElementExSwapV2",
+  "sourceName": "contracts/swap/IElementExSwapV2.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IAggregator.ERC20Pair[]",
+          "name": "erc20Pairs",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bytes",
+          "name": "tradeBytes",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address[]",
+          "name": "dustTokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "batchBuyWithERC20s",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IAggregator.ERC20Pair[]",
+          "name": "erc20Pairs",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "marketId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "tradeData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ISimulator.TradeDetails[]",
+          "name": "tradeDetails",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "dustTokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "batchBuyWithERC20sSimulate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "tradeBytes",
+          "type": "bytes"
+        }
+      ],
+      "name": "batchBuyWithETH",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "marketId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "tradeData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ISimulator.TradeDetails[]",
+          "name": "tradeDetails",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "batchBuyWithETHSimulate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

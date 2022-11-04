@@ -1,9 +1,4 @@
-export enum Network {
-    ETH = 'eth',
-    BSC = 'bsc',
-    Polygon = 'polygon',
-    Avalanche = 'avalanche',
-}
+import { Network } from '../types/types'
 
 const CHAIN_NAMES: { [key: number]: string } = {
     1: Network.ETH,
@@ -13,33 +8,33 @@ const CHAIN_NAMES: { [key: number]: string } = {
     137: Network.Polygon,
     80001: Network.Polygon,
     43114: Network.Avalanche,
-    43113: Network.Avalanche,
-};
+    43113: Network.Avalanche
+}
 
 export function getChain(chainId: number): string {
     if (CHAIN_NAMES[chainId]) {
-        return CHAIN_NAMES[chainId];
+        return CHAIN_NAMES[chainId]
     }
-    throw Error("getChain, unsupported chainId : " + chainId);
+    throw Error('getChain, unsupported chainId : ' + chainId)
 }
 
-export function getChainId(chain: any, isMainnet: boolean): number {
+export function getChainId(chain: any, isTestnet = false): number {
     if (chain) {
         switch (chain.toString()) {
             case Network.ETH:
-                return isMainnet ? 1 : 5;
-
+                return !isTestnet ? 1 : 5
+            
             case Network.BSC:
-                return isMainnet ? 56 : 97;
-
+                return !isTestnet ? 56 : 97
+            
             case Network.Polygon:
-                return isMainnet ? 137 : 80001;
-
+                return !isTestnet ? 137 : 80001
+            
             case Network.Avalanche:
-                return isMainnet ? 43114 : 43113;
+                return !isTestnet ? 43114 : 43113
         }
     }
-    throw Error("getChainId, unsupported chain : " + chain);
+    throw Error('getChainId, unsupported chain : ' + chain)
 }
 
 

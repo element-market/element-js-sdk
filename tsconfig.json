@@ -5,7 +5,7 @@
   ],
   "exclude": [
     "./node_modules",
-    "./test/**/*",
+    "./examples/**/*",
     "config/webpack.config.js",
     "config/webpack.node.config.js"
   ],
@@ -38,11 +38,12 @@
       "es5",
       "dom",
       "es6",
-      "es2015.promise"
+      "es2019"
     ],
     "noImplicitAny": false,
     // 不允许隐式的 any 类型
     "removeComments": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": false
   }
 }
