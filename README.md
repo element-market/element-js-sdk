@@ -119,7 +119,7 @@ inside this sdk.
 To sell a bulk of ERC-721 assets, call `makeERC721SellOrders`.
 
 ```JavaScript
-const r = await sdk0.makeERC721SellOrders({
+const r = await sdk.makeERC721SellOrders({
   items: [{
     erc721TokenAddress: tokenAddress1,
     erc721TokenId: tokenId1,
@@ -293,7 +293,7 @@ To cancel a bulk of orders, call `cancelOrders`:
 
 ```JavaScript
 const orders = await sdk.queryOrders({ ... });
-const r = await sdk0.cancelOrders({
+const r = await sdk.cancelOrders({
   orders: orders
 })
 for (const info of r.succeedTransactions) {
