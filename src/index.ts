@@ -47,7 +47,7 @@ import {
 import { toNumber, toString } from './util/numberUtil'
 
 export class ElementSDK {
-    
+
     public chainId: number
     public apiOption: ApiOption
     public web3Signer: Web3Signer
@@ -55,7 +55,7 @@ export class ElementSDK {
     public orderManager: OrderManager
     public swap: Swap
     public isTestnet: boolean = false
-    
+
     constructor(config: ElementAPIConfig) {
         if (config.isTestnet != null) {
             this.isTestnet = config.isTestnet
@@ -71,22 +71,22 @@ export class ElementSDK {
         this.orderManager = new OrderManager(this.web3Signer)
         this.swap = new Swap(this.web3Signer)
     }
-    
+
     public async makeERC721SellOrders(params: MakeERC721SellOrdersParams): Promise<MakeERC721SellOrdersResponse> {
         let error
         const succeedList: OrderInformation[] = []
         const failedList: FailedERC721Item[] = []
-        
+
         // 1. setApproveForAll
         const counter = await this.batchOrderManager.approveAndGetCounter(params)
-        
+
         // 2. create orders
         const orders = await this.batchOrderManager.createOrders(params, counter)
         for (const order of orders) {
             try {
                 // 3. sign order
                 const signedOrder = await this.batchOrderManager.signOrder(order)
-                
+
                 // 4. post order
                 const r = await postBatchSignedERC721SellOrder(signedOrder, this.apiOption)
                 succeedList.push(...getSucceedList(order, r.successList))
@@ -95,7 +95,7 @@ export class ElementSDK {
                 error = e
             }
         }
-        
+
         if (succeedList.length == 0 && failedList.length == 0) {
             throw error
         }
@@ -104,12 +104,12 @@ export class ElementSDK {
             failedList: failedList
         }
     }
-    
+
     public async makeSellOrder(params: MakeOrderParams): Promise<OrderInformation> {
         if (params.assetId == null) {
             throw Error('createSellOrder failed, asset.id is undefined.')
         }
-        
+
         if (
             (!params.assetSchema || params.assetSchema.toLowerCase() == 'erc721') &&
             (!params.takerAddress || params.takerAddress.toLowerCase() == NULL_ADDRESS)
@@ -135,11 +135,11 @@ export class ElementSDK {
         }
         return await this.makeOrder(params, false)
     }
-    
+
     public async makeBuyOrder(params: MakeOrderParams): Promise<OrderInformation> {
         return await this.makeOrder(params, true)
     }
-    
+
     public async fillOrder(params: FillOrderParams): Promise<TransactionResponse> {
         if (params.order.standard?.toLowerCase() != Standard.ElementEx) {
             if (toStandardERC20Token(params.order.paymentToken) != NULL_ADDRESS) {
@@ -158,13 +158,13 @@ export class ElementSDK {
                 maxPriorityFeePerGas: params.maxPriorityFeePerGas
             })
         }
-        
+
         const account = await this.web3Signer.getCurrentAccount()
         const list = await queryExchangeData([params.order], this.apiOption)
         if (!list.length || !list[0].exchangeData) {
             throw Error('fillOrder failed, queryExchangeData error.')
         }
-        
+
         const signedOrder = JSON.parse(list[0].exchangeData)
         if (params.order.saleKind == SaleKind.BatchSignedERC721Order) {
             return this.batchOrderManager.fillOrder(signedOrder, account, params)
@@ -190,7 +190,7 @@ export class ElementSDK {
             return this.orderManager.fillOrder(signedOrder, params)
         }
     }
-    
+
     public async batchBuyWithETH(params: BatchBuyWithETHParams): Promise<TransactionResponse> {
         if (!params.orders?.length) {
             throw Error('batchBuyWithETH failed, orders.length error.')
@@ -204,18 +204,18 @@ export class ElementSDK {
         const tradeDatas = await queryTradeData(account, params.orders, this.apiOption)
         return this.swap.batchBuyWithETH(tradeDatas, params)
     }
-    
+
     public async cancelOrder(params: CancelOrderParams): Promise<TransactionResponse> {
         const account = await this.web3Signer.getCurrentAccount()
         if (params.order?.maker?.toLowerCase() != account.toLowerCase()) {
             throw Error(`cancelOrder failed, account mismatch, order.maker(${params.order?.maker}), account(${account}).`)
         }
-        
+
         const list = await queryExchangeData([params.order], this.apiOption)
         if (!list.length || !list[0].exchangeData) {
             throw Error('cancelOrder failed, queryExchangeData error.')
         }
-        
+
         const signedOrder = JSON.parse(list[0].exchangeData)
         if (params.order.standard?.toLowerCase() == Standard.ElementEx) {
             if (params.order.schema.toLowerCase() == AssetSchema.ERC721.toLowerCase()) {
@@ -233,24 +233,24 @@ export class ElementSDK {
             throw Error('cancelOrder failed, unsupported standard : ' + params.order.standard)
         }
     }
-    
+
     public async cancelOrders(params: CancelOrdersParams): Promise<CancelOrdersResponse> {
         if (!params.orders?.length) {
             throw Error(`cancelOrders failed, orders?.length error.`)
         }
-        
+
         const account = await this.web3Signer.getCurrentAccount()
         params.orders.forEach((value, index, array) => {
             if (account.toLowerCase() != value.maker?.toLowerCase()) {
                 throw Error(`cancelOrders failed, account mismatch, index=(${index}), order.maker(${value.maker}), account(${account}).`)
             }
         })
-        
+
         const list = await queryExchangeData(params.orders, this.apiOption)
         if (!list?.length) {
             throw Error('cancelOrders failed, queryExchangeData error.')
         }
-        
+
         const elementERC721Orders: OrderInformation[] = []
         const elementERC1155Orders: OrderInformation[] = []
         const seaportOrders: OrderInformation[] = []
@@ -259,7 +259,7 @@ export class ElementSDK {
         const elementERC1155SignedOrders: any[] = []
         const seaportSignedOrders: any[] = []
         const looksRareSignedOrders: any[] = []
-        
+
         for (const order of list) {
             if (order.exchangeData && order.standard) {
                 const signedOrder = JSON.parse(order.exchangeData)
@@ -280,7 +280,7 @@ export class ElementSDK {
                 }
             }
         }
-        
+
         const succeedTransactions: Array<CancelOrdersTransaction> = []
         if (elementERC721Orders.length > 0) {
             const tx = await this.orderManager.cancelERC721Orders(elementERC721SignedOrders, params)
@@ -333,7 +333,7 @@ export class ElementSDK {
         }
         return { succeedTransactions: succeedTransactions }
     }
-    
+
     public async cancelAllOrdersForSigner(params?: CancelAllOrdersByMakerParams): Promise<TransactionResponse> {
         if (params?.standard?.toLowerCase() == Standard.Seaport) {
             return cancelAllSeaportOrders(this.web3Signer, params)
@@ -343,11 +343,11 @@ export class ElementSDK {
             return this.orderManager.cancelAllOrders(params)
         }
     }
-    
+
     public async queryOrders(query: OrderQuery): Promise<Array<Order>> {
         return await queryOrders(query, this.apiOption)
     }
-    
+
     private async makeOrder(params: MakeOrderParams, isBuyOrder: boolean): Promise<OrderInformation> {
         const schema = params.assetSchema || AssetSchema.ERC721
         if (schema.toLowerCase() != 'erc721' && schema.toLowerCase() != 'erc1155') {
@@ -355,27 +355,24 @@ export class ElementSDK {
         }
         const assetId = toString(params.assetId) || undefined
         const accountAddress = await this.web3Signer.getCurrentAccount()
-        
+
         // 1. query nonce
         const nonce = await queryNonce({
             maker: accountAddress,
             schema: schema,
             count: 1
         }, this.apiOption)
-        
+
         // 2. queryFees
         const fees = await queryFees([params.assetAddress], this.apiOption)
         let platformFeePoint, platformFeeAddress, royaltyFeePoint, royaltyFeeAddress
         if (fees.length > 0) {
             platformFeePoint = fees[0].protocolFeePoints
             platformFeeAddress = fees[0].protocolFeeAddress
+            royaltyFeePoint = fees[0].royaltyFeePoints
             royaltyFeeAddress = fees[0].royaltyFeeAddress
-            royaltyFeePoint = params.royaltyFee ? Math.max(params.royaltyFee, 0) : 0
-            if (fees[0].royaltyFeePoints) {
-                royaltyFeePoint = Math.min(fees[0].royaltyFeePoints, royaltyFeePoint)
-            }
         }
-        
+
         // 3. create order
         const quantity = params.quantity != null ? toString(params.quantity) : undefined
         const orderParams: CreateOrderParams = {
@@ -401,14 +398,14 @@ export class ElementSDK {
         const order = isBuyOrder
             ? await this.orderManager.createBuyOrder(orderParams, params)
             : await this.orderManager.createSellOrder(orderParams, params)
-        
+
         // 4. sign order
         const signedOrder = await this.orderManager.signOrder(order)
-        
+
         // 5. post order
         const request = toOrderRequest(signedOrder)
         await postOrder(request, this.apiOption)
-        
+
         const orders = await this.queryOrders({
             asset_contract_address: request.metadata.asset.address,
             token_ids: [request.metadata.asset.id],

@@ -32,19 +32,19 @@ export const maxERC20Amount = BigNumber.from('0xffffffffffffffffffffffffffffffff
 export const maxBasicERC20Amount = BigNumber.from('0xffffffffffffffffffffffff')
 
 export class BatchSignedOrderManager {
-    
+
     public web3Signer: Web3Signer
     public apiOption: ApiOption
     public elementEx: Contract
     public helper: Contract
-    
+
     constructor(web3Signer: Web3Signer, apiOption: ApiOption) {
         this.web3Signer = web3Signer
         this.apiOption = apiOption
         this.elementEx = getElementExContract(web3Signer.chainId)
         this.helper = getHelperContract(web3Signer.chainId)
     }
-    
+
     public async createOrders(params: MakeERC721SellOrdersParams, counter?: number): Promise<Array<BatchSignedERC721Order>> {
         const fees = await this.queryFees(params)
         const platformFeeRecipient = getPlatformFeeRecipient(fees)
@@ -53,10 +53,10 @@ export class BatchSignedOrderManager {
         const paymentToken = toStandardERC20Token(params.paymentToken)
         const { listingTime, expirationTime } = getOrderTime(params)
         const hashNonce = (counter != null) ? counter : await this.elementEx.getHashNonce(maker)
-        
+
         const list = getOrders(params.items)
         const orders: BatchSignedERC721Order[] = []
-        
+
         let error
         for (const order of list) {
             try {
@@ -65,7 +65,7 @@ export class BatchSignedOrderManager {
                     schema: AssetSchema.ERC721,
                     count: order.itemCount
                 }, this.apiOption)
-                
+
                 setCollectionFees(order.basicCollections, fees)
                 setCollectionFees(order.collections, fees)
                 orders.push({
@@ -85,13 +85,13 @@ export class BatchSignedOrderManager {
                 error = e
             }
         }
-        
+
         if (orders.length == 0) {
             throw error
         }
         return orders
     }
-    
+
     public async signOrder(order: BatchSignedERC721Order): Promise<BatchSignedERC721OrderRequest> {
         const typedData = getTypedData(order, this.web3Signer.chainId)
         const sign = await this.web3Signer.signTypedData(order.maker, typedData)
@@ -105,7 +105,7 @@ export class BatchSignedOrderManager {
         // console.log(JSON.stringify(o))
         return o
     }
-    
+
     public async fillOrder(order: BatchSignedERC721OrderResponse, taker: string, gasParams: GasParams) {
         const tradeData = await fillBatchSignedOrder(order, taker, this.web3Signer)
         const from = await this.web3Signer.getCurrentAccount()
@@ -120,15 +120,15 @@ export class BatchSignedOrderManager {
         }
         return this.web3Signer.ethSend(call)
     }
-    
+
     public async approveAndGetCounter(params: MakeERC721SellOrdersParams): Promise<number> {
         checkSellOrdersParams(params)
-        
+
         const set: Set<string> = new Set
         for (const item of params.items) {
             set.add(item.erc721TokenAddress.toLowerCase())
         }
-        
+
         const list: any[] = []
         for (const value of set.values()) {
             list.push({
@@ -137,7 +137,7 @@ export class BatchSignedOrderManager {
                 operator: this.elementEx.address
             })
         }
-        
+
         const owner = await this.web3Signer.getCurrentAccount()
         const r = await this.helper.getSDKApprovalsAndCounter(owner, list)
         for (let i = 0; i < list.length; i++) {
@@ -148,7 +148,7 @@ export class BatchSignedOrderManager {
         }
         return parseInt(r.elementCounter)
     }
-    
+
     private async queryFees(params: MakeERC721SellOrdersParams): Promise<Map<string, Fees>> {
         const addressList: string[] = []
         for (const item of params.items) {
@@ -157,13 +157,9 @@ export class BatchSignedOrderManager {
                 addressList.push(address)
             }
         }
-        const royaltyFee = params.royaltyFee ? Math.max(params.royaltyFee, 0) : 0
         const fees = await queryFees(addressList, this.apiOption)
         const map: Map<string, Fees> = new Map<string, Fees>()
         for (const fee of fees) {
-            if (fee.royaltyFeePoints) {
-                fee.royaltyFeePoints = Math.min(fee.royaltyFeePoints, royaltyFee)
-            }
             map.set(fee.contractAddress.toLowerCase(), fee)
         }
         return map
@@ -174,7 +170,7 @@ export function getSucceedList(order: BatchSignedERC721Order, assets: any[]): Or
     if (assets.length == 0) {
         return []
     }
-    
+
     const map: Map<string, any> = new Map
     for (const collection of order.basicCollections) {
         for (const item of collection.items) {
@@ -194,7 +190,7 @@ export function getSucceedList(order: BatchSignedERC721Order, assets: any[]): Or
             map.set(key, value)
         }
     }
-    
+
     const list: OrderInformation[] = []
     for (const asset of assets) {
         const assetContract = asset.assetContract?.toString().toLowerCase() || ''
@@ -278,7 +274,7 @@ function getOrders(items: ERC721SellOrderItem[]): any[] {
         if (item.erc721TokenId == null || item.erc721TokenId === '') {
             throw Error(`makeERC721SellOrders failed, tokenId(${item.erc721TokenId}) error.`)
         }
-        
+
         let collection = map.get(item.erc721TokenAddress.toLowerCase())
         if (collection == null) {
             collection = {
@@ -288,35 +284,35 @@ function getOrders(items: ERC721SellOrderItem[]): any[] {
             }
             map.set(collection.nftAddress, collection)
         }
-        
+
         const obj = {
             erc20TokenAmount: toString(item.paymentTokenAmount),
             nftId: toString(item.erc721TokenId)
         }
         collection.items.push(obj)
-        
+
         if (collection.isBasic) {
             if (maxBasicERC20Amount.lt(obj.erc20TokenAmount) || maxBasicNftId.lt(obj.nftId)) {
                 collection.isBasic = false
             }
         }
-        
+
         if (maxERC20Amount.lt(obj.erc20TokenAmount)) {
             throw Error(`makeERC721SellOrders failed, item.paymentTokenAmount(${obj.erc20TokenAmount} exceed the maxValue(${maxERC20Amount.toHexString()})).`)
         }
     }
-    
+
     let point = 0
     let order: any = null
     const orders: any[] = []
-    
+
     for (const value of map.values()) {
         if (isOrderFulled(point, 2, order)) {
             point = 0
             order = null
         }
         point += 2
-        
+
         let collection
         const plusPoint = value.isBasic ? 1 : 2
         for (const item of value.items) {
@@ -325,7 +321,7 @@ function getOrders(items: ERC721SellOrderItem[]): any[] {
                 order = null
                 collection = null
             }
-            
+
             if (order == null) {
                 order = {
                     basicCollections: [],
@@ -334,7 +330,7 @@ function getOrders(items: ERC721SellOrderItem[]): any[] {
                 }
                 orders.push(order)
             }
-            
+
             if (collection == null) {
                 collection = {
                     nftAddress: value.nftAddress,
@@ -349,7 +345,7 @@ function getOrders(items: ERC721SellOrderItem[]): any[] {
                     order.collections.push(collection)
                 }
             }
-            
+
             point += plusPoint
             order.itemCount++
             collection.items.push(item)
@@ -367,7 +363,7 @@ function isOrderFulled(point: number, plusPoint: number, order: any) {
 
 function getOrderTime(params: MakeERC721SellOrdersParams) {
     const now = Math.floor(Date.now() / 1000)
-    
+
     let listingTime
     if (params.listingTime) {
         listingTime = params.listingTime
@@ -380,7 +376,7 @@ function getOrderTime(params: MakeERC721SellOrdersParams) {
     } else {
         listingTime = now - 60
     }
-    
+
     let expirationTime
     if (params.expirationTime != null) {
         expirationTime = params.expirationTime

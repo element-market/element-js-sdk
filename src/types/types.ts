@@ -109,8 +109,6 @@ export interface MakeERC721SellOrdersParams extends GasParams {
     listingTime?: number;
     expirationTime?: number;
     paymentToken?: string;
-    // Royalty fee percentage. Value range: [0 ~ 10000], means [0% ~ 100%]. Default value : 0.
-    royaltyFee?: number;
     items: Array<ERC721SellOrderItem>
 }
 
@@ -135,8 +133,6 @@ export interface MakeOrderParams extends GasParams {
     paymentTokenAmount: string | number;
     listingTime?: number;
     expirationTime?: number;
-    // Royalty fee percentage. Value range: [0 ~ 10000], means [0% ~ 100%]. Default value : 0.
-    royaltyFee?: number;
 }
 
 export interface FillOrderParams extends GasParams {
