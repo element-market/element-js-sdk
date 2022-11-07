@@ -56,23 +56,23 @@ export interface OrderInformation {
     // Asset token id
     tokenId: string;
     // Asset schema
-    schema: AssetSchema;
+    schema: AssetSchema | string;
     // The order trading Standards.
-    standard: Standard;
+    standard: Standard | string;
     // The order maker's wallet address.
     maker: string;
     // Listing time.
-    listingTime: number;
+    listingTime: number | string;
     // Expiration time.
-    expirationTime: number;
+    expirationTime: number | string;
     // Priced in paymentToken, and the unit is ether.
-    price: number;
+    price: number | string;
     // The contract address of the paymentToken.
     paymentToken: string;
     // Kind of sell order. 0 for fixed-price sales, and 3 for batchSignedERC721 sell order.
-    saleKind: SaleKind;
+    saleKind: SaleKind | number | string;
     // Side of the order. 0 for buy order, and 1 for sell order.
-    side: OrderSide;
+    side: OrderSide | number | string;
 }
 
 export interface Order extends OrderInformation {
@@ -127,7 +127,7 @@ export interface MakeOrderParams extends GasParams {
     takerAddress?: string;
     assetId?: string | number;
     assetAddress: string;
-    assetSchema?: AssetSchema;
+    assetSchema?: AssetSchema | string;
     quantity?: string | number;
     paymentToken?: string;
     paymentTokenAmount: string | number;

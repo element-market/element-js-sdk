@@ -117,15 +117,15 @@ function toStandardOrders(orders: OrderInformation[], option: ApiOption): OrderI
             chain: option.chain,
             contractAddress: formatVal(item.contractAddress),
             tokenId: formatVal(item.tokenId),
-            schema: item.schema,
-            standard: item.standard,
+            schema: item.schema.toString().toLowerCase(),
+            standard: item.standard.toString().toLowerCase(),
             maker: formatVal(item.maker),
-            listingTime: item.listingTime,
-            expirationTime: item.expirationTime,
-            price: item.price,
+            listingTime: Number(item.listingTime),
+            expirationTime: Number(item.expirationTime),
+            price: Number(item.price),
             paymentToken: formatVal(item.paymentToken),
-            saleKind: item.saleKind,
-            side: item.side
+            saleKind: Number(item.saleKind),
+            side: Number(item.side)
         } as OrderInformation
     })
 }

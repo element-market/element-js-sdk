@@ -101,7 +101,7 @@ export interface OrderRequest {
 export interface Asset {
     id?: string;
     address: string;
-    schema: AssetSchema;
+    schema: AssetSchema | string;
 }
 
 export interface CreateOrderParams {

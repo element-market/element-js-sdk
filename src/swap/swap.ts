@@ -56,7 +56,7 @@ export class Swap {
             call.to = this.swapEx.address
             
             const tradeBytes = toTradeBytes([], tradeDetails)
-            const tx = await this.swapEx.populateTransaction.batchBuyWithETH(tradeBytes, { value: value })
+            const tx = await this.swapEx.populateTransaction.batchBuyWithETH(tradeBytes, { value: call.value })
             call.data = tx.data
         }
         return this.web3Signer.ethSend(call)
@@ -185,5 +185,5 @@ function toItemBytes(item: TradeDetails, continueIfFailed: boolean) {
         [item.value, 168],
         [tradeData.length / 2, 32]
     ])
-    return head + tradeData
+    return head.substring(2) + tradeData
 }
