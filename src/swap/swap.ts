@@ -2,11 +2,14 @@ import { SwapTradeData, TradeDetails } from './swapTypes'
 import { Web3Signer } from '../signer/Web3Signer'
 import { BigNumber, Contract } from 'ethers'
 import { getElementExContract, getElementExSwapContract } from '../contracts/contracts'
-import { GasParams } from '../types/types'
+import { GasParams, NULL_ADDRESS, OrderSide, Standard } from '../types/types'
 import { BatchSignedERC721OrderResponse } from '../element/batchSignedOrder/batchSignedTypes'
 import { encodeBasicOrders } from './encodeBasicOrders'
 import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
 import { encodeBits } from '../util/bitsUtil'
+import { getElementMarketId } from '../util/marketUtil'
+import { encodeSeaportOrder } from './encodeSeaportOrders'
+import { encodeLooksRareOrder } from './encodeLooksRareOrders'
 
 const MASK_96 = '0xffffffffffffffffffffffff'
 
@@ -40,7 +43,7 @@ export class Swap {
             maxFeePerGas: gasParams.maxFeePerGas
         }
         
-        if (tradeDetails.length == 1 && tradeDetails[0].marketId.toString() == this.getElementMarketId()) {
+        if (tradeDetails.length == 1 && tradeDetails[0].marketId.toString() == getElementMarketId(this.web3Signer.chainId)) {
             call.to = this.elementEx.address
             call.data = tradeDetails[0].data
             call.value = tradeDetails[0].value
@@ -66,7 +69,7 @@ export class Swap {
         const batchSignedERC721Orders: BatchSignedERC721OrderResponse[] = []
         
         const flags: number[] = []
-        const elementMarketId = this.getElementMarketId()
+        const elementMarketId = getElementMarketId(this.web3Signer.chainId)
         for (let i = 0; i < tradeDatas.length; i++) {
             const data = tradeDatas[i]
             if (
@@ -84,8 +87,32 @@ export class Swap {
                     batchSignedERC721Orders.push(order as BatchSignedERC721OrderResponse)
                     flags.push(1)
                 }
+            } else if (!data.errorDetail?.length) {
+                flags.push(2)
+            } else if (
+                data.exchangeData &&
+                data.paymentToken == NULL_ADDRESS &&
+                data.saleKind == 0 &&
+                data.side == OrderSide.SellOrder &&
+                (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5)
+            ) {
+                if (data.standard?.toLowerCase() == Standard.Seaport) {
+                    const tradeData = await encodeSeaportOrder(data.exchangeData, taker)
+                    data.data = tradeData.data
+                    data.marketId = tradeData.marketId
+                    data.value = tradeData.value
+                    flags.push(2)
+                } else if (data.standard?.toLowerCase() == Standard.LooksRare) {
+                    const tradeData = await encodeLooksRareOrder(data.exchangeData)
+                    data.data = tradeData.data
+                    data.marketId = tradeData.marketId
+                    data.value = tradeData.value
+                    flags.push(2)
+                } else {
+                    flags.push(3)
+                }
             } else {
-                flags.push(data.errorDetail?.length > 0 ? 3 : 2)
+                flags.push(3)
             }
         }
         
@@ -129,10 +156,6 @@ export class Swap {
             }
         }
         return tradeDetails
-    }
-    
-    private getElementMarketId(): string {
-        return (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) ? '2' : '0'
     }
 }
 
