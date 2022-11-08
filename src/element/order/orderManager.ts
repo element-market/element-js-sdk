@@ -416,7 +416,7 @@ export class OrderManager {
                 const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, this.elementEx.address, gasParams)
                 await tx.wait()
             }
-            if (order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
+            if (order.erc20Token.toLowerCase() == ETH_TOKEN_ADDRESS) {
                 payValue = r.info.erc20TotalAmount.toString()
             }
         }
@@ -521,7 +521,7 @@ export class OrderManager {
                 await tx.wait()
             }
             
-            if (order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
+            if (order.erc20Token.toLowerCase() == ETH_TOKEN_ADDRESS) {
                 payValue = amount.toString()
             }
         }
