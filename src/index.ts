@@ -5,8 +5,7 @@ import {
     queryExchangeData,
     queryFees,
     queryNonce,
-    queryOrders,
-    queryTradeData
+    queryOrders
 } from './api/openApi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
@@ -199,10 +198,15 @@ export class ElementSDK {
             if (toStandardERC20Token(order.paymentToken) != NULL_ADDRESS) {
                 throw Error('batchBuyWithETH failed, paymentToken error, only support ETH.')
             }
+            if (Number(order.side) != OrderSide.SellOrder) {
+                throw Error('batchBuyWithETH failed, order.side error, only support SellOrder.')
+            }
         }
-        const account = await this.web3Signer.getCurrentAccount()
-        const tradeDatas = await queryTradeData(account, params.orders, this.apiOption)
-        return this.swap.batchBuyWithETH(tradeDatas, params)
+        const orders = await queryExchangeData(params.orders, this.apiOption)
+        if (!orders.length) {
+            throw Error('fillOrder failed, queryExchangeData error.')
+        }
+        return this.swap.batchBuyWithETH(orders, params)
     }
     
     public async cancelOrder(params: CancelOrderParams): Promise<TransactionResponse> {

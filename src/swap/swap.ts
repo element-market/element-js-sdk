@@ -1,17 +1,17 @@
-import { SwapTradeData, TradeDetails } from './swapTypes'
+import { TradeDetails } from './swapTypes'
 import { Web3Signer } from '../signer/Web3Signer'
 import { BigNumber, Contract } from 'ethers'
 import { getElementExContract, getElementExSwapContract } from '../contracts/contracts'
-import { GasParams, NULL_ADDRESS, OrderSide, Standard } from '../types/types'
+import { GasParams, OrderDetail, SaleKind, Standard } from '../types/types'
 import { BatchSignedERC721OrderResponse } from '../element/batchSignedOrder/batchSignedTypes'
-import { encodeBasicOrders } from './encodeBasicOrders'
-import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
 import { encodeBits } from '../util/bitsUtil'
 import { getElementMarketId } from '../util/marketUtil'
 import { encodeSeaportOrder } from './encodeSeaportOrders'
 import { encodeLooksRareOrder } from './encodeLooksRareOrders'
-
-const MASK_96 = '0xffffffffffffffffffffffff'
+import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
+import { encodeBasicOrders } from './encodeBasicOrders'
+import { encodeOrder } from './encodeOrders'
 
 export class Swap {
     
@@ -25,12 +25,12 @@ export class Swap {
         this.swapEx = getElementExSwapContract(web3Signer.chainId)
     }
     
-    public async batchBuyWithETH(tradeDatas: Array<SwapTradeData>, gasParams: GasParams) {
-        if (!tradeDatas || tradeDatas.length == 0) {
-            throw Error(`batchBuyWithETH failed, tradeDatas.length error.`)
+    public async batchBuyWithETH(orders: Array<OrderDetail>, gasParams: GasParams): Promise<TransactionResponse> {
+        if (!orders || orders.length == 0) {
+            throw Error(`batchBuyWithETH failed, orders.length error.`)
         }
         
-        const tradeDetails = await this.toTradeDetails(tradeDatas)
+        const tradeDetails = await this.toTradeDetails(orders)
         if (!tradeDetails || tradeDetails.length == 0) {
             throw Error(`batchBuyWithETH failed, no valid orders.`)
         }
@@ -62,97 +62,66 @@ export class Swap {
         return this.web3Signer.ethSend(call)
     }
     
-    private async toTradeDetails(tradeDatas: Array<SwapTradeData>): Promise<Array<TradeDetails>> {
+    private async toTradeDetails(orders: Array<OrderDetail>): Promise<Array<TradeDetails>> {
         const taker = await this.web3Signer.getCurrentAccount()
-        
-        const basicOrders: any[] = []
-        const batchSignedERC721Orders: BatchSignedERC721OrderResponse[] = []
-        
-        const flags: number[] = []
         const elementMarketId = getElementMarketId(this.web3Signer.chainId)
-        for (let i = 0; i < tradeDatas.length; i++) {
-            const data = tradeDatas[i]
-            if (
-                elementMarketId == data.marketId?.toString() &&
-                data.exchangeData &&
-                data.schema?.toLowerCase() == 'erc721' &&
-                data.value &&
-                BigNumber.from(data.value).lte(MASK_96)
-            ) {
-                const order = JSON.parse(data.exchangeData)
-                if (order.order) {
-                    basicOrders.push(order)
-                    flags.push(0)
+        
+        const batchSignedERC721Orders: BatchSignedERC721OrderResponse[] = []
+        const basicOrders: any[] = []
+        
+        const list: any[] = []
+        for (const order of orders) {
+            if (!order.exchangeData) {
+                continue
+            }
+            
+            const standard = order.standard?.toLowerCase()
+            if (standard == Standard.ElementEx) {
+                if (Number(order.saleKind) == SaleKind.BatchSignedERC721Order) {
+                    if (batchSignedERC721Orders.length == 0) {
+                        list.push(batchSignedERC721Orders)
+                    }
+                    batchSignedERC721Orders.push(JSON.parse(order.exchangeData))
                 } else {
-                    batchSignedERC721Orders.push(order as BatchSignedERC721OrderResponse)
-                    flags.push(1)
+                    if (order.schema?.toLowerCase() == 'erc721' && Number(order.price) <= 0xffffffff) {
+                        if (basicOrders.length == 0) {
+                            list.push(basicOrders)
+                        }
+                        basicOrders.push(JSON.parse(order.exchangeData))
+                    } else {
+                        const tradeDetail = await encodeOrder(order, taker, elementMarketId)
+                        if (tradeDetail) {
+                            list.push(tradeDetail)
+                        }
+                    }
                 }
-            } else if (!data.errorDetail?.length) {
-                flags.push(2)
-            } else if (
-                data.exchangeData &&
-                data.paymentToken == NULL_ADDRESS &&
-                data.saleKind == 0 &&
-                data.side == OrderSide.SellOrder &&
-                (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5)
-            ) {
-                if (data.standard?.toLowerCase() == Standard.Seaport) {
-                    const tradeData = await encodeSeaportOrder(data.exchangeData, taker)
-                    data.data = tradeData.data
-                    data.marketId = tradeData.marketId
-                    data.value = tradeData.value
-                    flags.push(2)
-                } else if (data.standard?.toLowerCase() == Standard.LooksRare) {
-                    const tradeData = await encodeLooksRareOrder(data.exchangeData)
-                    data.data = tradeData.data
-                    data.marketId = tradeData.marketId
-                    data.value = tradeData.value
-                    flags.push(2)
-                } else {
-                    flags.push(3)
+            } else if (standard == Standard.Seaport) {
+                if (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) {
+                    const tradeDetail = await encodeSeaportOrder(order.exchangeData, taker)
+                    list.push(tradeDetail)
                 }
-            } else {
-                flags.push(3)
+            } else if (standard == Standard.LooksRare) {
+                if (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) {
+                    const tradeDetail = await encodeLooksRareOrder(order.exchangeData)
+                    list.push(tradeDetail)
+                }
             }
         }
         
-        let basicOrdersTradeDetails: TradeDetails[] = []
-        if (basicOrders.length > 0) {
-            basicOrdersTradeDetails = await encodeBasicOrders(basicOrders, taker, elementMarketId)
-        }
-        
-        let batchSignedERC721TradeDetail: TradeDetails | null = null
-        if (batchSignedERC721Orders.length > 0) {
-            batchSignedERC721TradeDetail = await encodeBatchSignedOrders(batchSignedERC721Orders, taker, elementMarketId)
-        }
-        
-        let isBasicOrdersAdd = false
-        let isBatchSignedERC721OrderAdd = false
-        
         const tradeDetails: TradeDetails[] = []
-        for (let i = 0; i < tradeDatas.length; i++) {
-            switch (flags[i]) {
-                case 0:
-                    if (basicOrdersTradeDetails.length > 0) {
-                        if (!isBasicOrdersAdd) {
-                            tradeDetails.push(...basicOrdersTradeDetails)
-                            isBasicOrdersAdd = true
-                        }
-                    }
-                    break
-                case 1:
-                    if (batchSignedERC721TradeDetail != null) {
-                        if (!isBatchSignedERC721OrderAdd) {
-                            tradeDetails.push(batchSignedERC721TradeDetail)
-                            isBatchSignedERC721OrderAdd = true
-                        }
-                    }
-                    break
-                case 2:
-                    tradeDetails.push(tradeDatas[i])
-                    break
-                default:
-                    break
+        for (const item of list) {
+            if (item === batchSignedERC721Orders) {
+                const tradeDetail = await encodeBatchSignedOrders(batchSignedERC721Orders, taker, elementMarketId)
+                if (tradeDetail) {
+                    tradeDetails.push(tradeDetail)
+                }
+            } else if (item === basicOrders) {
+                const tradeDetailList = await encodeBasicOrders(basicOrders, taker, elementMarketId)
+                if (tradeDetailList?.length) {
+                    tradeDetails.push(...tradeDetailList)
+                }
+            } else {
+                tradeDetails.push(item)
             }
         }
         return tradeDetails

@@ -148,7 +148,7 @@ export class OrderManager {
                             data = tradeDatas[0].data
                         }
                     } else {
-                        const tx = await this.elementEx.populateTransaction.buyERC721(order, sig, params.takerAddress)
+                        const tx = await this.elementEx.populateTransaction.buyERC721(order, sig)
                         data = tx?.data
                     }
                 } else {
@@ -168,7 +168,7 @@ export class OrderManager {
             } else {
                 // buyERC1155
                 if (params.saleKind == SaleKind.FixedPrice) {
-                    const tx = await this.elementEx.populateTransaction.buyERC1155(order, sig, params.takerAddress, quantity)
+                    const tx = await this.elementEx.populateTransaction.buyERC1155(order, sig, quantity)
                     data = tx?.data
                 } else {
                     const tx = await this.elementEx.populateTransaction.buyERC1155Ex(order, sig, params.takerAddress, quantity, '0x')
@@ -504,25 +504,25 @@ export class OrderManager {
                 throw Error('fillOrder failed, fill 1155 order must set quantity.')
             }
             
-            let amount = BigNumber.from(order.erc20TokenAmount).mul(quantity).div(order.erc1155TokenAmount)
+            let payAmount = BigNumber.from(order.erc20TokenAmount).mul(quantity).div(order.erc1155TokenAmount)
             for (let i = 0; i < order.fees.length; i++) {
                 const fee = BigNumber.from(order.fees[i].amount).mul(quantity).div(order.erc1155TokenAmount)
-                amount = amount.add(fee)
+                payAmount = payAmount.add(fee)
             }
             
-            if (amount.lt(r.takerCheckInfo.erc20Balance)) {
+            if (payAmount.gt(r.takerCheckInfo.erc20Balance)) {
                 throw Error(`fillOrder, erc20BalanceCheck failed, make sure account(${takerAddress}) have enough
-                            balance(${ethers.utils.formatEther(amount.toString())}) of erc20Token(${order.erc20Token}).`
+                            balance(${ethers.utils.formatEther(payAmount.toString())}) of erc20Token(${order.erc20Token}).`
                 )
             }
             
-            if (amount.lt(r.takerCheckInfo.erc20Allowance) && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
+            if (payAmount.gt(r.takerCheckInfo.erc20Allowance) && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
                 const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, this.elementEx.address, gasParams)
                 await tx.wait()
             }
             
             if (order.erc20Token.toLowerCase() == ETH_TOKEN_ADDRESS) {
-                payValue = amount.toString()
+                payValue = payAmount.toString()
             }
         }
         return { tokenId: assetId, payValue: payValue, quantity: quantity }
