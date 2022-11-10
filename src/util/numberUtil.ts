@@ -13,3 +13,11 @@ export function toString(val: any): string {
 export function toNumber(val: any): number | undefined {
     return val != null ? Number(val.toString()) : undefined
 }
+
+export function toHexValue(value: string) {
+    const hex = BigNumber.from(value).toHexString()
+    if (hex.startsWith('0x0') && hex.length > 3) {
+        return '0x' + hex.substring(3)
+    }
+    return hex
+}

@@ -14,6 +14,7 @@ export {
 
 export type {
     SignerOrProvider,
+    Asset,
     ElementAPIConfig,
     OrderInformation,
     Order,
@@ -26,6 +27,7 @@ export type {
     MakeOrderParams,
     FillOrderParams,
     BatchBuyWithETHParams,
+    EncodeTradeDataParams,
     CancelOrderParams,
     CancelOrdersParams,
     CancelOrdersResponse,

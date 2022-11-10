@@ -98,16 +98,14 @@ export interface OrderRequest {
     hash: string;
 }
 
-export interface Asset {
-    id?: string;
-    address: string;
-    schema: AssetSchema | string;
-}
-
 export interface CreateOrderParams {
     makerAddress: string;
     takerAddress: string;
-    asset: Asset;
+    asset: {
+        id?: string;
+        address: string;
+        schema: AssetSchema | string;
+    };
     quantity?: string;
     paymentToken?: string;
     startTokenAmount: string;

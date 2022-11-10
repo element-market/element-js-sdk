@@ -23,6 +23,10 @@ async function test() {
     console.log('tx.hash: ', tx.hash)
     const receipt = await tx.wait()
     console.log('completed， gasUsed: ', receipt.gasUsed.toString())
+    
+    // 3. getBoughtAssets
+    const assets = sdk1.getBoughtAssets(receipt)
+    console.log('assets: ', assets)
 }
 
 test()

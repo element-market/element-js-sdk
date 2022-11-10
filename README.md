@@ -21,6 +21,7 @@ and [npm](https://www.npmjs.com/package/element-js-sdk)
     - [Fetching Orders](#fetching-orders)
     - [Fill Orders](#fill-orders)
     - [Cancel Orders](#cancel-orders)
+    - [Encode Trade Data](#encode-trade-data)
 - [Advanced](#advanced)
     - [User-Defined GasPrice](#user-defined-gasprice)
     - [Scheduling Future Listings](#scheduling-future-listings)
@@ -234,8 +235,14 @@ const transaction = await sdk.batchBuyWithETH({
   orders: orders
 });
 console.log("tx.hash: ", transaction.hash);
+
+// wait for transaction completed.
 const receipt = await transaction.wait();
 console.log("completed，receipt: ", receipt);
+
+// getBoughtAssets
+const assets = sdk.getBoughtAssets(receipt)
+console.log('assets: ', assets)
 ```
 
 To buy or sell a NFT, call `fillOrder`:
@@ -314,6 +321,37 @@ const transaction = await sdk.cancelAllOrdersForSigner({
 const receipt = await transaction.wait()
 console.log("completed")
 ```
+
+### Encode Trade Data
+
+If you want to get `TradeData`, call `encodeTradeData`.
+
+```JavaScript
+const orders = await sdk.queryOrders({ ... });
+const tradeData = await sdk.encodeTradeData({
+  orders: orders,
+  taker: accountAddress
+});
+console.log("tradeData: ", tradeData);
+
+// sendTransaction
+const signer = await getEthersSigner()
+const transaction = await signer.sendTransaction({
+  to: tradeData.toContract,
+  data: tradeData.data,
+  value: tradeData.payableValue
+})
+
+// wait for transaction completed.
+const receipt = await transaction.wait();
+console.log("completed，receipt: ", receipt);
+
+// getBoughtAssets
+const assets = sdk.getBoughtAssets(receipt)
+console.log('assets: ', assets)
+```
+
+Note that the `taker` is optional, and the default `taker` is sdk.signer.
 
 ## Advanced
 

@@ -43,6 +43,13 @@ export enum AssetSchema {
     ERC1155 = 'ERC1155'
 }
 
+export interface Asset {
+    assetId: string;
+    assetAddress: string;
+    assetSchema: AssetSchema;
+    quantity: string;
+}
+
 export interface ElementAPIConfig {
     networkName: Network;
     apiKey: string;
@@ -143,6 +150,17 @@ export interface FillOrderParams extends GasParams {
 
 export interface BatchBuyWithETHParams extends GasParams {
     orders: Array<OrderInformation>;
+}
+
+export interface EncodeTradeDataParams {
+    orders: Array<OrderInformation>;
+    taker?: string;
+}
+
+export interface TradeData {
+    toContract: string;
+    payableValue: string;
+    data: string;
 }
 
 export interface CancelOrderParams extends GasParams {

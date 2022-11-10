@@ -1,14 +1,13 @@
 import { TradeDetails } from './swapTypes'
-import { Web3Signer } from '../signer/Web3Signer'
+import { LimitedCallSpec, Web3Signer } from '../signer/Web3Signer'
 import { BigNumber, Contract } from 'ethers'
 import { getElementExContract, getElementExSwapContract } from '../contracts/contracts'
-import { GasParams, OrderDetail, SaleKind, Standard } from '../types/types'
+import { NULL_ADDRESS, OrderDetail, SaleKind, Standard } from '../types/types'
 import { BatchSignedERC721OrderResponse } from '../element/batchSignedOrder/batchSignedTypes'
 import { encodeBits } from '../util/bitsUtil'
 import { getElementMarketId } from '../util/marketUtil'
 import { encodeSeaportOrder } from './encodeSeaportOrders'
 import { encodeLooksRareOrder } from './encodeLooksRareOrders'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
 import { encodeBasicOrders } from './encodeBasicOrders'
 import { encodeOrder } from './encodeOrders'
@@ -25,26 +24,23 @@ export class Swap {
         this.swapEx = getElementExSwapContract(web3Signer.chainId)
     }
     
-    public async batchBuyWithETH(orders: Array<OrderDetail>, gasParams: GasParams): Promise<TransactionResponse> {
+    public async encodeTradeData(tag: string, orders: Array<OrderDetail>, taker?: string): Promise<LimitedCallSpec> {
         if (!orders || orders.length == 0) {
-            throw Error(`batchBuyWithETH failed, orders.length error.`)
+            throw Error(`${tag} failed, orders.length error.`)
         }
         
-        const tradeDetails = await this.toTradeDetails(orders)
+        if (taker == null || taker == '' || taker.toLowerCase() == NULL_ADDRESS) {
+            taker = await this.web3Signer.getCurrentAccount()
+        }
+        
+        const tradeDetails = await this.toTradeDetails(orders, taker.toLowerCase())
         if (!tradeDetails || tradeDetails.length == 0) {
-            throw Error(`batchBuyWithETH failed, no valid orders.`)
+            throw Error(`${tag} failed, no valid orders.`)
         }
         
-        const account = await this.web3Signer.getCurrentAccount()
-        const call: any = {
-            from: account,
-            gasPrice: gasParams.gasPrice,
-            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
-            maxFeePerGas: gasParams.maxFeePerGas
-        }
-        
+        const call: any = {}
         if (tradeDetails.length == 1 && tradeDetails[0].marketId.toString() == getElementMarketId(this.web3Signer.chainId)) {
-            call.to = this.elementEx.address
+            call.to = this.elementEx.address.toLowerCase()
             call.data = tradeDetails[0].data
             call.value = tradeDetails[0].value
         } else {
@@ -53,17 +49,16 @@ export class Swap {
                 value = value.add(item.value)
             }
             call.value = value.toString()
-            call.to = this.swapEx.address
+            call.to = this.swapEx.address.toLowerCase()
             
             const tradeBytes = toTradeBytes([], tradeDetails)
             const tx = await this.swapEx.populateTransaction.batchBuyWithETH(tradeBytes, { value: call.value })
             call.data = tx.data
         }
-        return this.web3Signer.ethSend(call)
+        return call
     }
     
-    private async toTradeDetails(orders: Array<OrderDetail>): Promise<Array<TradeDetails>> {
-        const taker = await this.web3Signer.getCurrentAccount()
+    private async toTradeDetails(orders: Array<OrderDetail>, taker: string): Promise<Array<TradeDetails>> {
         const elementMarketId = getElementMarketId(this.web3Signer.chainId)
         
         const batchSignedERC721Orders: BatchSignedERC721OrderResponse[] = []
@@ -102,7 +97,7 @@ export class Swap {
                 }
             } else if (standard == Standard.LooksRare) {
                 if (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) {
-                    const tradeDetail = await encodeLooksRareOrder(order.exchangeData)
+                    const tradeDetail = await encodeLooksRareOrder(order.exchangeData, taker)
                     list.push(tradeDetail)
                 }
             }

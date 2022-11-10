@@ -7,8 +7,9 @@ import {
     queryNonce,
     queryOrders
 } from './api/openApi'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
 import {
+    Asset,
     AssetSchema,
     BatchBuyWithETHParams,
     CancelAllOrdersByMakerParams,
@@ -17,6 +18,7 @@ import {
     CancelOrdersResponse,
     CancelOrdersTransaction,
     ElementAPIConfig,
+    EncodeTradeDataParams,
     FailedERC721Item,
     FillOrderParams,
     MakeERC721SellOrdersParams,
@@ -27,7 +29,8 @@ import {
     OrderInformation,
     OrderSide,
     SaleKind,
-    Standard
+    Standard,
+    TradeData
 } from './types/types'
 import { Web3Signer } from './signer/Web3Signer'
 import { BatchSignedOrderManager, getSucceedList } from './element/batchSignedOrder/batchSignedOrderManager'
@@ -44,6 +47,7 @@ import {
     cancelSeaportOrders
 } from './others/cancelOrder'
 import { toNumber, toString } from './util/numberUtil'
+import { getBoughtAssets } from './util/receiptUtil'
 
 export class ElementSDK {
     
@@ -191,22 +195,34 @@ export class ElementSDK {
     }
     
     public async batchBuyWithETH(params: BatchBuyWithETHParams): Promise<TransactionResponse> {
-        if (!params.orders?.length) {
-            throw Error('batchBuyWithETH failed, orders.length error.')
-        }
-        for (const order of params.orders) {
-            if (toStandardERC20Token(order.paymentToken) != NULL_ADDRESS) {
-                throw Error('batchBuyWithETH failed, paymentToken error, only support ETH.')
-            }
-            if (Number(order.side) != OrderSide.SellOrder) {
-                throw Error('batchBuyWithETH failed, order.side error, only support SellOrder.')
-            }
-        }
+        this.checkSellOrdersParams('batchBuyWithETH', params.orders)
         const orders = await queryExchangeData(params.orders, this.apiOption)
         if (!orders.length) {
-            throw Error('fillOrder failed, queryExchangeData error.')
+            throw Error('batchBuyWithETH failed, queryExchangeData error.')
         }
-        return this.swap.batchBuyWithETH(orders, params)
+        const call = await this.swap.encodeTradeData('batchBuyWithETH', orders)
+        call.gasPrice = params.gasPrice
+        call.maxPriorityFeePerGas = params.maxPriorityFeePerGas
+        call.maxFeePerGas = params.maxFeePerGas
+        return this.web3Signer.ethSend(call)
+    }
+    
+    public async encodeTradeData(params: EncodeTradeDataParams): Promise<TradeData> {
+        this.checkSellOrdersParams('encodeTradeData', params.orders)
+        const orders = await queryExchangeData(params.orders, this.apiOption)
+        if (!orders.length) {
+            throw Error('encodeTradeData failed, queryExchangeData error.')
+        }
+        const call = await this.swap.encodeTradeData('encodeTradeData', orders, params.taker)
+        return {
+            toContract: call.to.toLowerCase(),
+            payableValue: toString(call.value),
+            data: call.data
+        }
+    }
+    
+    public getBoughtAssets(receipt: TransactionReceipt): Array<Asset> {
+        return getBoughtAssets(receipt)
     }
     
     public async cancelOrder(params: CancelOrderParams): Promise<TransactionResponse> {
@@ -350,6 +366,25 @@ export class ElementSDK {
     
     public async queryOrders(query: OrderQuery): Promise<Array<Order>> {
         return await queryOrders(query, this.apiOption)
+    }
+    
+    private checkSellOrdersParams(tag: string, orders: Array<OrderInformation>) {
+        if (!orders?.length) {
+            throw Error(`${tag} failed, orders.length error.`)
+        }
+        
+        const weth = this.orderManager.WETH.toLowerCase()
+        for (const order of orders) {
+            const paymentToken = order.paymentToken
+            if (paymentToken != NULL_ADDRESS) {
+                if (!(order.standard?.toString().toLowerCase() == Standard.LooksRare && paymentToken == weth)) {
+                    throw Error(`${tag} failed, paymentToken error, only support ETH.`)
+                }
+            }
+            if (Number(order.side) != OrderSide.SellOrder) {
+                throw Error(`${tag} failed, order.side error, only support SellOrder.`)
+            }
+        }
     }
     
     private async makeOrder(params: MakeOrderParams, isBuyOrder: boolean): Promise<OrderInformation> {
