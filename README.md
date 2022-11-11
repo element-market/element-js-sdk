@@ -89,7 +89,7 @@ To get started, first request an API key [here](https://element.readme.io/refere
 
 Then, create a new ElementJS client, using your [ethers](https://docs.ethers.io/v5) web3Provider or signer:
 
-Note that, the default `web3Provider` does not check for network timeout. To do that, refer to the [TimeoutWeb3Provider](https://github.com/element-market/element-js-sdk/blob/main/examples/9.TimeoutWeb3Provider.ts).
+Note that, the default `web3Provider` does not check for network timeout. To do that, refer to the [TimeoutWeb3Provider](https://github.com/element-market/element-js-sdk/blob/main/examples/TimeoutWeb3Provider.ts).
 
 ```JavaScript
 import { ElementSDK, Network } from 'element-js-sdk'
