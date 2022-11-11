@@ -69,10 +69,12 @@ export class Web3Signer {
         } else if (call.gasPrice) {
             transactionRequest.gasPrice = ethers.BigNumber.from(call.gasPrice)
         } else {
-            const gas = await estimateGas(this.chainId)
-            if (gas) {
-                transactionRequest.maxFeePerGas = gas.maxFeePerGas
-                transactionRequest.maxPriorityFeePerGas = gas.maxPriorityFeePerGas
+            if (!(this.signer instanceof ethers.providers.Web3Provider)) {
+                const gas = await estimateGas(this.chainId)
+                if (gas) {
+                    transactionRequest.maxFeePerGas = gas.maxFeePerGas
+                    transactionRequest.maxPriorityFeePerGas = gas.maxPriorityFeePerGas
+                }
             }
         }
         return await signer.sendTransaction(transactionRequest)
