@@ -6,12 +6,9 @@
 
 ![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)
 
-A JavaScript library for element.market: buy, sell, make offer on any NFTs. With Element.js, you can easily build your
-own NFT marketplace. Trade ERC721 or ERC1155 items. You don't have to deploy your own smart contracts or off-chain
-orderbooks.
+A JavaScript library for element.market: buy, sell, make offer on any NFTs. With Element.js, you can easily build yourown NFT marketplace. Trade ERC721 or ERC1155 items. You don't have to deploy your own smart contracts or off-chain orderbooks.
 
-Published on [GitHub](https://github.com/element-market/element-js-sdk)
-and [npm](https://www.npmjs.com/package/element-js-sdk)
+Published on [GitHub](https://github.com/element-market/element-js-sdk) and [npm](https://www.npmjs.com/package/element-js-sdk)
 
 - [Synopsis](#synopsis)
 - [Installation](#installation)
@@ -32,11 +29,9 @@ and [npm](https://www.npmjs.com/package/element-js-sdk)
 
 This is the JavaScript SDK for [element.market](https://www.element.market/), a marketplace for NFTs.
 
-It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**
-listings**), and complete trades programmatically.
+It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**listings**), and complete trades programmatically.
 
-You get started by [requesting an API key](https://element.readme.io/reference/api-overview) and instantiating your own
-sdk. Then you can create orders off-chain or fulfill orders on-chain.
+You get started by [requesting an API key](https://element.readme.io/reference/api-overview) and instantiating your own sdk. Then you can create orders off-chain or fulfill orders on-chain.
 
 ## Installation
 
@@ -46,10 +41,7 @@ Install [element-js-sdk](https://www.npmjs.com/package/element-js-sdk), in your 
 npm install --save element-js-sdk
 ```
 
-If your project run in browser environment, you need
-install [crypto-browserify](https://www.npmjs.com/package/crypto-browserify)
-, [stream-browserify](https://www.npmjs.com/package/stream-browserify), [buffer](https://www.npmjs.com/package/buffer),
-and config webpack.config.js:
+If your project run in browser environment, you need install [crypto-browserify](https://www.npmjs.com/package/crypto-browserify), [stream-browserify](https://www.npmjs.com/package/stream-browserify), [buffer](https://www.npmjs.com/package/buffer), and config webpack.config.js:
 
 ```bash
 #install crypto-browserify, stream-browserify, buffer
@@ -115,8 +107,7 @@ const sdk = new ElementSDK({
 });
 ```
 
-Note that the operations: `sign orders` `erc20.approve` `erc721.setApprovalForAll` `erc1155.setApprovalForAll` is done
-inside this sdk.
+Note that the operations: `sign orders` `erc20.approve` `erc721.setApprovalForAll` `erc1155.setApprovalForAll` is done inside this sdk.
 
 ### Making Listings
 
@@ -152,8 +143,7 @@ const order = await sdk.makeSellOrder({
 });
 ```
 
-Note that the default assets is ERC-721. For ERC-1155 assets, you should set `assetSchema` to `AssetSchema.ERC1155` and
-pass a `quantity`:
+Note that the default assets is ERC-721. For ERC-1155 assets, you should set `assetSchema` to `AssetSchema.ERC1155` and pass a `quantity`:
 
 ```JavaScript
 const order = await sdk.makeSellOrder({
@@ -163,8 +153,7 @@ const order = await sdk.makeSellOrder({
 });
 ```
 
-The default payment token is native token(e.g. ETH on ether chain), if use an ERC20 token, you can set `paymentToken` to
-an ERC20 token address.
+The default payment token is native token(e.g. ETH on ether chain), if use an ERC20 token, you can set `paymentToken` to an ERC20 token address.
 
 ```JavaScript
 const order = await sdk.makeSellOrder({
@@ -196,8 +185,7 @@ const order = await sdk.makeBuyOrder({
 });
 ```
 
-Note that make offers aren't supported with the native token, so you have to use an ERC20 token, or wrapped native token
-if none is specified.
+Note that make offers aren't supported with the native token, so you have to use an ERC20 token, or wrapped native token if none is specified.
 
 #### Making Collection-Based Offers
 
@@ -225,8 +213,7 @@ const orders = await sdk.queryOrders({
 });
 ```
 
-The api documentation is [here](https://element.readme.io/reference/retrieve-orders-list), and the example
-is [here](https://github.com/element-market/element-js-sdk/tree/main/examples/8.querylOrders.ts).
+The api documentation is [here](https://element.readme.io/reference/retrieve-orders-list), and the example is [here](https://github.com/element-market/element-js-sdk/tree/main/examples/8.querylOrders.ts).
 
 ### Fill Orders
 
@@ -272,8 +259,7 @@ const receipt = await transaction.wait();
 console.log("completed.");
 ```
 
-For the ERC-1155 asset order, the default `quantity` is all the remaining quantity. You can also set the `quantity` if
-needed. To do that, it's just call like below:
+For the ERC-1155 asset order, the default `quantity` is all the remaining quantity. You can also set the `quantity` if needed. To do that, it's just call like below:
 
 ```JavaScript
 const quantity = '5000';
@@ -385,8 +371,7 @@ console.log("completed");
 
 ### Scheduling Future Listings
 
-You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in
-seconds) to your sdk instance:
+You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your sdk instance:
 
 ```JavaScript
 const order = await sdk.makeSellOrder({
@@ -399,12 +384,9 @@ const order = await sdk.makeSellOrder({
 
 ### Private Auctions
 
-Now you can make offers and listings that can only be filled by an address of your choosing. This allows you to
-negotiate a price in some channel and sell for your chosen price on element.market, **without having to trust that the
-counterparty will abide by your terms!**
+Now you can make offers and listings that can only be filled by an address of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on element.market, **without having to trust that the counterparty will abide by your terms!**
 
-Here's an example of listing a Decentraland parcel for 3 ETH with a specific buyer address allowed to take it. No more
-needing to worry about whether they'll give you enough back!
+Here's an example of listing a Decentraland parcel for 3 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they'll give you enough back!
 
 ```JavaScript
 // Address allowed to buy from you
