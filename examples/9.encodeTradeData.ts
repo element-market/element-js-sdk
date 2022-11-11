@@ -14,13 +14,13 @@ async function test() {
     console.log('orders, ', orders)
     
     // 2. encodeTradeData
-    const tradeData = sdk1.encodeTradeData({
+    const tradeData = await sdk1.encodeTradeData({
         orders: orders
     })
     console.log('tradeData: ', tradeData)
     
     // 3. encodeTradeData specify taker
-    const tradeDataWithTaker = sdk1.encodeTradeData({
+    const tradeDataWithTaker = await sdk1.encodeTradeData({
         orders: orders,
         taker: '0x9226f7df5e316df051f0490ce3b753c51695d0bc'
     })
