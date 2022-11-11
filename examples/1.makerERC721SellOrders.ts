@@ -8,19 +8,22 @@ async function test() {
     const r = await sdk0.makeERC721SellOrders({
         items: [
             {
-            erc721TokenAddress: '0x5D1feadF92dF113d810d944229464544Ab9B930c',
-            erc721TokenId: '1',
-            paymentTokenAmount: 1e16
-        }, {
-            erc721TokenAddress: '0x5D1feadF92dF113d810d944229464544Ab9B930c',
-            erc721TokenId: 2,
-            paymentTokenAmount: '12000000000000000'
-        },
-            {
-            erc721TokenAddress: '0xCF09Aba56f36a4521094c3bF6A303262636B2e1A',
-            erc721TokenId: '320',
-            paymentTokenAmount: 1.2e16
-        }]
+                erc721TokenAddress: '0xd077bd42b79eB45F6eC24d025c6025B9749215CE',
+                erc721TokenId: '10',
+                paymentTokenAmount: 1e16
+            }, {
+                erc721TokenAddress: '0xd077bd42b79eB45F6eC24d025c6025B9749215CE',
+                erc721TokenId: 11,
+                paymentTokenAmount: '11000000000000000'
+            }, {
+                erc721TokenAddress: '0x051AF73Bc6feF83F4799014bd7A9F9Ad40a4Ad9F',
+                erc721TokenId: '1',
+                paymentTokenAmount: 1.3e16
+            }, {
+                erc721TokenAddress: '0x051AF73Bc6feF83F4799014bd7A9F9Ad40a4Ad9F',
+                erc721TokenId: '2',
+                paymentTokenAmount: 1.4e16
+            }]
     })
     console.log("succeedList, ", r.succeedList)
     console.log("failedList, ", r.failedList)

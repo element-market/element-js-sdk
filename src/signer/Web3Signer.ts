@@ -3,6 +3,7 @@ import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract
 import { ContractABI } from '../contracts/abi'
 import { GasParams, NULL_ADDRESS, SignerOrProvider } from '../types/types'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
+import { estimateGas } from '../util/gasUtil'
 
 export interface LimitedCallSpec extends GasParams {
     from: string;
@@ -61,11 +62,18 @@ export class Web3Signer {
         }
         
         const signer = await this.getSigner(call.from)
+    
         if (call.maxFeePerGas && call.maxPriorityFeePerGas) {
             transactionRequest.maxFeePerGas = ethers.BigNumber.from(call.maxFeePerGas)
             transactionRequest.maxPriorityFeePerGas = ethers.BigNumber.from(call.maxPriorityFeePerGas)
         } else if (call.gasPrice) {
             transactionRequest.gasPrice = ethers.BigNumber.from(call.gasPrice)
+        } else {
+            const gas = await estimateGas(this.chainId)
+            if (gas) {
+                transactionRequest.maxFeePerGas = gas.maxFeePerGas
+                transactionRequest.maxPriorityFeePerGas = gas.maxPriorityFeePerGas
+            }
         }
         return await signer.sendTransaction(transactionRequest)
     }
@@ -151,7 +159,7 @@ export class Web3Signer {
                 maxPriorityFeePerGas: gasParams?.maxPriorityFeePerGas
             })
         }
-        throw Error(`approveERC20Proxy failed, account=${account}, erc20Address=${erc20Address}, spender=${spender}.`)
+        throw Error(`approveERC20Proxy failed, account=${account}, erc20Address =${erc20Address}, spender=${spender}.`)
     }
     
     public async approveERC721Proxy(account: string, erc721Address: string, operator: string, gasParams: GasParams, approved = true): Promise<TransactionResponse> {
@@ -166,7 +174,7 @@ export class Web3Signer {
                 maxPriorityFeePerGas: gasParams?.maxPriorityFeePerGas
             })
         }
-        throw Error(`approveERC721Proxy failed, account=${account}, erc721Address=${erc721Address}, operator=${operator}.`)
+        throw Error(`approveERC721Proxy failed, account=${account}, erc721Address =${erc721Address}, operator=${operator}.`)
     }
     
     public async approveERC1155Proxy(account: string, erc1155Address: string, operator: string, gasParams: GasParams, approved = true): Promise<TransactionResponse> {
@@ -181,6 +189,6 @@ export class Web3Signer {
                 maxPriorityFeePerGas: gasParams?.maxPriorityFeePerGas
             })
         }
-        throw Error(`approveERC1155Proxy failed, account=${account}, erc1155Address=${erc1155Address}, operator=${operator}.`)
+        throw Error(`approveERC1155Proxy failed, account=${account}, erc1155Address =${erc1155Address}, operator=${operator}.`)
     }
 }

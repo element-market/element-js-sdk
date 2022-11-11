@@ -8,6 +8,7 @@ import { SwapTradeData } from '../swap/swapTypes'
 export async function postOrder(order: OrderRequest, option: ApiOption, retries = 1) {
     let r
     try {
+        console.log('Wait for postOrder.')
         r = await axios({
             method: 'post',
             url: toUrl('/openapi/v1/orders/post', option),
@@ -26,11 +27,13 @@ export async function postOrder(order: OrderRequest, option: ApiOption, retries 
     if (r.data?.code !== 0) {
         throw Error(`postOrder failed, ${r.data?.code}, ${r.data?.msg}, ${JSON.stringify(order)}`)
     }
+    console.log('postOrder completed.')
 }
 
 export async function postBatchSignedERC721SellOrder(order: BatchSignedERC721OrderRequest, option: ApiOption, retries = 1): Promise<any> {
     let r
     try {
+        console.log('Wait for postBatchOrder.')
         r = await axios({
             method: 'post',
             url: toUrl('/openapi/v1/orders/postBatch', option),
@@ -48,6 +51,7 @@ export async function postBatchSignedERC721SellOrder(order: BatchSignedERC721Ord
     }
     
     if (r.data?.code === 0 && r.data?.data) {
+        console.log('postBatchOrder completed.')
         return {
             successList: r.data.data.successList || [],
             failList: r.data.data.failList || []
@@ -138,7 +142,6 @@ export async function queryNonce(query: NonceQuery, option: ApiOption, retries =
             + toKeyVal('exchange', query)
             + toKeyVal('schema', query)
             + toKeyVal('count', query)
-        console.log(url)
         r = await axios({
             method: 'get',
             url: url,
@@ -215,7 +218,7 @@ export async function queryOrders(query: OrderQuery, option: ApiOption): Promise
             method: 'get',
             url: url,
             headers: { 'x-api-key': option.apiKey },
-            timeout: 30000
+            timeout: TIME_OUT
         })
     } catch (e) {
         throw Error('queryOrders failed, ' + e)

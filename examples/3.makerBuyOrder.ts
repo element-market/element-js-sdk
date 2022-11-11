@@ -9,7 +9,7 @@ async function test() {
     // 1. makeBuyOrder
     const order = await sdk1.makeBuyOrder({
         assetId: '100001',
-        assetAddress: '0x52e325E79820d8547798A2405d595020C75B713a',
+        assetAddress: '0x6c57b71EF74B0B94c42520c09fbBCE1ACcC238A8',
         assetSchema: AssetSchema.ERC1155,
         quantity: 2000,
         paymentTokenAmount: ethers.utils.parseEther('0.02').toString()

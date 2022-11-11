@@ -6,8 +6,8 @@ async function test() {
     // 1. makeERC721SellOrders
     const r = await sdk0.makeERC721SellOrders({
         items: [{
-            erc721TokenAddress: '0x5D1feadF92dF113d810d944229464544Ab9B930c',
-            erc721TokenId: '6',
+            erc721TokenAddress: '0xd077bd42b79eB45F6eC24d025c6025B9749215CE',
+            erc721TokenId: '15',
             paymentTokenAmount: 1e16
         }]
     })

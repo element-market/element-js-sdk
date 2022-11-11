@@ -6,7 +6,7 @@ async function test() {
     
     // 1. query element orders
     const orders = await sdk1.queryOrders({
-        asset_contract_address: '0x9FDc7D60826A9b6979051Cb79ED9A9626390aD8e',
+        asset_contract_address: '0xd077bd42b79eB45F6eC24d025c6025B9749215CE',
         payment_token: NULL_ADDRESS,
     })
     console.log("orders, ", orders)

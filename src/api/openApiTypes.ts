@@ -2,7 +2,7 @@ import { OrderSide, SaleKind } from '../types/types'
 
 export const API_HOST = 'https://api.element.market'
 export const API_HOST_TESTNET = 'https://api-test.element.market'
-export const TIME_OUT = 15000
+export const TIME_OUT = 10000
 
 export interface ApiOption {
     chain: string;

@@ -9,12 +9,12 @@ async function test() {
     // 1. makeSellOrder
     const order = await sdk0.makeSellOrder({
         assetId: '100001',
-        assetAddress: '0x52e325E79820d8547798A2405d595020C75B713a',
+        assetAddress: '0x6c57b71EF74B0B94c42520c09fbBCE1ACcC238A8',
         assetSchema: AssetSchema.ERC1155,
-        quantity: 1000,
+        quantity: 100,
         paymentTokenAmount: ethers.utils.parseEther('0.02').toString()
     })
-    console.log(order)
+    console.log('order: ', order)
 
     // 2. batchBuyWithETH
     const tx = await sdk1.batchBuyWithETH({

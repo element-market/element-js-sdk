@@ -263,9 +263,9 @@ export class OrderManager {
         const r = isERC721Order
             ? await this.helper.checkERC721SellOrder(order, NULL_ADDRESS)
             : await this.helper.checkERC1155SellOrder(order, NULL_ADDRESS, '0')
-        
+    
+        order.hashNonce = r.info?.hashNonce?.toString()
         if (r.info.success) {
-            order.hashNonce = r.info.hashNonce.toString()
             return
         }
         if (!r.info.makerCheck) {
@@ -297,8 +297,11 @@ export class OrderManager {
                 throw Error(`createSellOrder, erc721OwnerCheck failed, make sure account(${order.maker}) is owner of assetId(${order['nftId']}).`)
             }
             if (!r.info.erc721ApprovedCheck) {
+                console.log('start approveERC721, ERC721Address =', order['nft'])
                 const tx = await this.web3Signer.approveERC721Proxy(order.maker, order['nft'], this.elementEx.address, gasParams)
+                console.log('approveERC721, tx.hash', tx.hash)
                 await tx.wait()
+                console.log('approveERC721, completed.')
             }
         } else {
             if (order['erc1155TokenAmount'] == null || BigNumber.from(order['erc1155TokenAmount']).lt('1')) {
@@ -311,8 +314,11 @@ export class OrderManager {
                 throw Error(`createSellOrder, erc1155BalanceCheck failed, account(${order.maker}), require erc1155Balance >= quantity`)
             }
             if (!r.info.erc1155ApprovedCheck) {
+                console.log('start approveERC1155, ERC1155Address =', order['erc1155Token'])
                 const tx = await this.web3Signer.approveERC1155Proxy(order.maker, order['erc1155Token'], this.elementEx.address, gasParams)
+                console.log('approveERC1155, tx.hash', tx.hash)
                 await tx.wait()
+                console.log('approveERC1155, completed.')
             }
         }
     }
@@ -322,9 +328,9 @@ export class OrderManager {
         const r = isERC721Order
             ? await this.helper.checkERC721BuyOrder(order, NULL_ADDRESS, '0')
             : await this.helper.checkERC1155BuyOrder(order, NULL_ADDRESS, '0', '0')
-        
+    
+        order.hashNonce = r.info?.hashNonce?.toString()
         if (r.info.success) {
-            order.hashNonce = r.info.hashNonce.toString()
             return
         }
         if (!r.info.makerCheck) {
@@ -363,8 +369,11 @@ export class OrderManager {
             throw Error(`createBuyOrder, erc20BalanceCheck failed, make sure account${order.maker} have enough balance of erc20Token(${order.erc20Token}).`)
         }
         if (!r.info.erc20AllowanceCheck && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
+            console.log('start approveERC20, ERC20Address =', order.erc20Token)
             const tx = await this.web3Signer.approveERC20Proxy(order.maker, order.erc20Token, this.elementEx.address, gasParams)
+            console.log('approveERC20, tx.hash', tx.hash)
             await tx.wait(1)
+            console.log('approveERC20, completed.')
         }
     }
     

@@ -48,6 +48,7 @@ import {
 } from './others/cancelOrder'
 import { toNumber, toString } from './util/numberUtil'
 import { getBoughtAssets } from './util/receiptUtil'
+import { BigNumber } from 'ethers'
 
 export class ElementSDK {
     
@@ -437,29 +438,36 @@ export class ElementSDK {
         const order = isBuyOrder
             ? await this.orderManager.createBuyOrder(orderParams, params)
             : await this.orderManager.createSellOrder(orderParams, params)
-        
+    
         // 4. sign order
         const signedOrder = await this.orderManager.signOrder(order)
-        
+    
         // 5. post order
         const request = toOrderRequest(signedOrder)
         await postOrder(request, this.apiOption)
-        
-        const orders = await this.queryOrders({
-            asset_contract_address: request.metadata.asset.address,
-            token_ids: [request.metadata.asset.id],
-            sale_kind: request.saleKind,
-            listed_after: request.listingTime - 1,
-            listed_before: request.listingTime + 1,
-            maker: request.maker,
-            taker: request.taker,
-            side: request.side
-        })
-        if (orders?.length) {
-            for (const o of orders) {
-                if (o.listingTime == request.listingTime) {
-                    return o
+    
+        if (schema.toLowerCase() == 'erc1155' &&
+            !BigNumber.from(request.basePrice).div(request.quantity).mul(request.quantity).eq(request.basePrice)) {
+            try {
+                const orders = await this.queryOrders({
+                    asset_contract_address: request.metadata.asset.address,
+                    token_ids: [request.metadata.asset.id],
+                    sale_kind: request.saleKind,
+                    listed_after: request.listingTime - 1,
+                    listed_before: request.listingTime + 1,
+                    maker: request.maker,
+                    taker: request.taker,
+                    side: request.side
+                })
+                if (orders?.length) {
+                    for (const o of orders) {
+                        if (o.listingTime == request.listingTime) {
+                            return o
+                        }
+                    }
                 }
+            } catch (e) {
+                console.log(e)
             }
         }
         return toOrderInformation(request)

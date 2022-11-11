@@ -39,7 +39,7 @@ export function getBoughtAssets(receipt: TransactionReceipt): Array<Asset> {
             list.push({
                 assetId: BigNumber.from(log.data.substring(0, 66)).toString(),
                 assetAddress: log.address.toLowerCase(),
-                assetSchema: AssetSchema.ERC721,
+                assetSchema: AssetSchema.ERC1155,
                 quantity: BigNumber.from('0x' + log.data.substring(66)).toString()
             })
         }

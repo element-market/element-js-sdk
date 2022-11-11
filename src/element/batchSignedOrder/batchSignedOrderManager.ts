@@ -142,8 +142,11 @@ export class BatchSignedOrderManager {
         const r = await this.helper.getSDKApprovalsAndCounter(owner, list)
         for (let i = 0; i < list.length; i++) {
             if (r.approvals[i].eq(0)) {
+                console.log('start approveERC721, ERC721Address =', list[i].tokenAddress)
                 const tx = await this.web3Signer.approveERC721Proxy(owner, list[i].tokenAddress, this.elementEx.address, params)
+                console.log('approveERC721, tx.hash', tx.hash)
                 await tx.wait(1)
+                console.log('approveERC721, completed.')
             }
         }
         return parseInt(r.elementCounter)
