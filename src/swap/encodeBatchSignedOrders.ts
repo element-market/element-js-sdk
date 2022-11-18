@@ -78,8 +78,8 @@ export async function encodeBatchSignedOrders(orders: BatchSignedERC721OrderResp
             [0, 88],
             [royaltyFeeRecipient, 160]
         ])
-        
-        const data = await elementExV3.populateTransaction.fillBatchSignedERC721Order(parameters, additional1, additional2)
+    
+        const data = await elementExV3.populateTransaction.fillBatchSignedERC721Orders(parameters, additional1, additional2)
         return {
             marketId: marketId,
             value: value.toString(),
