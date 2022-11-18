@@ -1,6 +1,6 @@
 import { LimitedCallSpec, Web3Signer } from '../../signer/Web3Signer'
 import { getElementExContract, getHelperContract } from '../../contracts/contracts'
-import { BigNumber, Contract, ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import {
     AssetSchema,
     ERC721SellOrderItem,
@@ -32,19 +32,15 @@ export const maxERC20Amount = BigNumber.from('0xffffffffffffffffffffffffffffffff
 export const maxBasicERC20Amount = BigNumber.from('0xffffffffffffffffffffffff')
 
 export class BatchSignedOrderManager {
-
+    
     public web3Signer: Web3Signer
     public apiOption: ApiOption
-    public elementEx: Contract
-    public helper: Contract
-
+    
     constructor(web3Signer: Web3Signer, apiOption: ApiOption) {
         this.web3Signer = web3Signer
         this.apiOption = apiOption
-        this.elementEx = getElementExContract(web3Signer.chainId)
-        this.helper = getHelperContract(web3Signer.chainId)
     }
-
+    
     public async createOrders(params: MakeERC721SellOrdersParams, counter?: number): Promise<Array<BatchSignedERC721Order>> {
         const fees = await this.queryFees(params)
         const platformFeeRecipient = getPlatformFeeRecipient(fees)
@@ -52,11 +48,12 @@ export class BatchSignedOrderManager {
         const maker = await this.web3Signer.getCurrentAccount()
         const paymentToken = toStandardERC20Token(params.paymentToken)
         const { listingTime, expirationTime } = getOrderTime(params)
-        const hashNonce = (counter != null) ? counter : await this.elementEx.getHashNonce(maker)
-
+        const elementEx = await this.getElementEx()
+        const hashNonce = (counter != null) ? counter : await elementEx.getHashNonce(maker)
+        
         const list = getOrders(params.items)
         const orders: BatchSignedERC721Order[] = []
-
+        
         let error
         for (const order of list) {
             try {
@@ -69,7 +66,7 @@ export class BatchSignedOrderManager {
                 setCollectionFees(order.basicCollections, fees)
                 setCollectionFees(order.collections, fees)
                 orders.push({
-                    exchange: this.elementEx.address.toLowerCase(),
+                    exchange: elementEx.address.toLowerCase(),
                     maker: maker.toLowerCase(),
                     listingTime: listingTime,
                     expirationTime: expirationTime,
@@ -91,7 +88,57 @@ export class BatchSignedOrderManager {
         }
         return orders
     }
-
+    
+    public async fillOrder(order: BatchSignedERC721OrderResponse, taker: string, gasParams: GasParams) {
+        const tradeData = await fillBatchSignedOrder(order, taker, this.web3Signer)
+        const elementEx = await this.getElementEx()
+        const from = await this.web3Signer.getCurrentAccount()
+        const call: LimitedCallSpec = {
+            from: from,
+            to: elementEx.address,
+            data: tradeData.data,
+            value: tradeData.value,
+            gasPrice: gasParams.gasPrice,
+            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
+            maxFeePerGas: gasParams.maxFeePerGas
+        }
+        return this.web3Signer.ethSend(call)
+    }
+    
+    public async approveAndGetCounter(params: MakeERC721SellOrdersParams): Promise<number> {
+        checkSellOrdersParams(params)
+        
+        const set: Set<string> = new Set
+        for (const item of params.items) {
+            set.add(item.erc721TokenAddress.toLowerCase())
+        }
+        
+        const elementEx = await this.getElementEx()
+        const helper = await this.getHelper()
+        
+        const list: any[] = []
+        for (const value of set.values()) {
+            list.push({
+                tokenType: 0,
+                tokenAddress: value,
+                operator: elementEx.address
+            })
+        }
+        
+        const owner = await this.web3Signer.getCurrentAccount()
+        const r = await helper.getSDKApprovalsAndCounter(owner, list)
+        for (let i = 0; i < list.length; i++) {
+            if (r.approvals[i].eq(0)) {
+                console.log('start approveERC721, ERC721Address =', list[i].tokenAddress)
+                const tx = await this.web3Signer.approveERC721Proxy(owner, list[i].tokenAddress, elementEx.address, params)
+                console.log('approveERC721, tx.hash', tx.hash)
+                await tx.wait(1)
+                console.log('approveERC721, completed.')
+            }
+        }
+        return parseInt(r.elementCounter)
+    }
+    
     public async signOrder(order: BatchSignedERC721Order): Promise<BatchSignedERC721OrderRequest> {
         const typedData = getTypedData(order, this.web3Signer.chainId)
         const sign = await this.web3Signer.signTypedData(order.maker, typedData)
@@ -105,53 +152,17 @@ export class BatchSignedOrderManager {
         // console.log(JSON.stringify(o))
         return o
     }
-
-    public async fillOrder(order: BatchSignedERC721OrderResponse, taker: string, gasParams: GasParams) {
-        const tradeData = await fillBatchSignedOrder(order, taker, this.web3Signer)
-        const from = await this.web3Signer.getCurrentAccount()
-        const call: LimitedCallSpec = {
-            from: from,
-            to: this.elementEx.address,
-            data: tradeData.data,
-            value: tradeData.value,
-            gasPrice: gasParams.gasPrice,
-            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
-            maxFeePerGas: gasParams.maxFeePerGas
-        }
-        return this.web3Signer.ethSend(call)
+    
+    private async getElementEx() {
+        const signer = await this.web3Signer.getSigner()
+        return getElementExContract(this.web3Signer.chainId, signer)
     }
-
-    public async approveAndGetCounter(params: MakeERC721SellOrdersParams): Promise<number> {
-        checkSellOrdersParams(params)
-
-        const set: Set<string> = new Set
-        for (const item of params.items) {
-            set.add(item.erc721TokenAddress.toLowerCase())
-        }
-
-        const list: any[] = []
-        for (const value of set.values()) {
-            list.push({
-                tokenType: 0,
-                tokenAddress: value,
-                operator: this.elementEx.address
-            })
-        }
-
-        const owner = await this.web3Signer.getCurrentAccount()
-        const r = await this.helper.getSDKApprovalsAndCounter(owner, list)
-        for (let i = 0; i < list.length; i++) {
-            if (r.approvals[i].eq(0)) {
-                console.log('start approveERC721, ERC721Address =', list[i].tokenAddress)
-                const tx = await this.web3Signer.approveERC721Proxy(owner, list[i].tokenAddress, this.elementEx.address, params)
-                console.log('approveERC721, tx.hash', tx.hash)
-                await tx.wait(1)
-                console.log('approveERC721, completed.')
-            }
-        }
-        return parseInt(r.elementCounter)
+    
+    private async getHelper() {
+        const signer = await this.web3Signer.getSigner()
+        return getHelperContract(this.web3Signer.chainId, signer)
     }
-
+    
     private async queryFees(params: MakeERC721SellOrdersParams): Promise<Map<string, Fees>> {
         const addressList: string[] = []
         for (const item of params.items) {

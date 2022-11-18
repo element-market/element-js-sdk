@@ -1,7 +1,7 @@
 import { TradeDetails } from './swapTypes'
 import { LimitedCallSpec, Web3Signer } from '../signer/Web3Signer'
 import { BigNumber, Contract } from 'ethers'
-import { getElementExContract, getElementExSwapContract } from '../contracts/contracts'
+import { ContractABI } from '../contracts/contracts'
 import { NULL_ADDRESS, OrderDetail, SaleKind, Standard } from '../types/types'
 import { BatchSignedERC721OrderResponse } from '../element/batchSignedOrder/batchSignedTypes'
 import { encodeBits } from '../util/bitsUtil'
@@ -11,17 +11,14 @@ import { encodeLooksRareOrder } from './encodeLooksRareOrders'
 import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
 import { encodeBasicOrders } from './encodeBasicOrders'
 import { encodeOrder } from './encodeOrders'
+import { CONTRACTS_ADDRESSES } from '../contracts/config'
 
 export class Swap {
     
     public web3Signer: Web3Signer
-    public elementEx: Contract
-    public swapEx: Contract
     
     constructor(web3Signer: Web3Signer) {
         this.web3Signer = web3Signer
-        this.elementEx = getElementExContract(web3Signer.chainId)
-        this.swapEx = getElementExSwapContract(web3Signer.chainId)
     }
     
     public async encodeTradeData(tag: string, orders: Array<OrderDetail>, taker?: string): Promise<LimitedCallSpec> {
@@ -40,7 +37,7 @@ export class Swap {
         
         const call: any = {}
         if (tradeDetails.length == 1 && tradeDetails[0].marketId.toString() == getElementMarketId(this.web3Signer.chainId)) {
-            call.to = this.elementEx.address.toLowerCase()
+            call.to = this.getElementEx().address.toLowerCase()
             call.data = tradeDetails[0].data
             call.value = tradeDetails[0].value
         } else {
@@ -49,13 +46,25 @@ export class Swap {
                 value = value.add(item.value)
             }
             call.value = value.toString()
-            call.to = this.swapEx.address.toLowerCase()
-            
+    
+            const swapEx = this.getSwapEx()
+            call.to = swapEx.address.toLowerCase()
+    
             const tradeBytes = toTradeBytes([], tradeDetails)
-            const tx = await this.swapEx.populateTransaction.batchBuyWithETH(tradeBytes, { value: call.value })
+            const tx = await swapEx.populateTransaction.batchBuyWithETH(tradeBytes, { value: call.value })
             call.data = tx.data
         }
         return call
+    }
+    
+    private getElementEx() {
+        const address = CONTRACTS_ADDRESSES[this.web3Signer.chainId].ElementEx
+        return new Contract(address, ContractABI.elementEx.abi)
+    }
+    
+    private getSwapEx() {
+        const address = CONTRACTS_ADDRESSES[this.web3Signer.chainId].ElementExSwapV2
+        return new Contract(address, ContractABI.elementExSwap.abi)
     }
     
     private async toTradeDetails(orders: Array<OrderDetail>, taker: string): Promise<Array<TradeDetails>> {

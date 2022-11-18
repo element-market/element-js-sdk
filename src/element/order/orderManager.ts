@@ -1,7 +1,7 @@
 import { LimitedCallSpec, Web3Signer } from '../../signer/Web3Signer'
 import { getElementExContract, getHelperContract } from '../../contracts/contracts'
 import { CONTRACTS_ADDRESSES } from '../../contracts/config'
-import { BigNumber, Contract, ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import {
     CreateOrderParams,
     DEFAULT_EXPIRATION_TIME,
@@ -26,15 +26,109 @@ const MASK_96 = '0xffffffffffffffffffffffff'
 export class OrderManager {
     
     public web3Signer: Web3Signer
-    public elementEx: Contract
-    public helper: Contract
     public WETH: string
     
     constructor(web3Signer: Web3Signer) {
         this.web3Signer = web3Signer
-        this.elementEx = getElementExContract(web3Signer.chainId)
-        this.helper = getHelperContract(web3Signer.chainId)
         this.WETH = CONTRACTS_ADDRESSES[web3Signer.chainId].WToken
+    }
+    
+    public async fillOrder(params: FillParams, gasParams: GasParams): Promise<TransactionResponse> {
+        const order = params.order
+        const sig = params.signature
+        const elementEx = await this.getElementEx()
+        
+        let data, value
+        if (order['nft'] != null) {
+            // ERC721Order
+            const { tokenId, payValue } = await this.checkAndApproveFillERC721Order(params, gasParams)
+            if (order['nftProperties'] != null) {
+                // sellERC721
+                const unwrapNativeToken = order.erc20Token.toLowerCase() == this.WETH.toLowerCase()
+                const tx = await elementEx.populateTransaction.sellERC721(order, sig, tokenId, unwrapNativeToken, '0x')
+                data = tx?.data
+            } else {
+                // buyERC721
+                if (params.saleKind == SaleKind.FixedPrice) {
+                    if (
+                        toStandardERC20Token(params.order.erc20Token) == NULL_ADDRESS &&
+                        BigNumber.from(params.order.erc20TokenAmount).lte(MASK_96)
+                    ) {
+                        const tradeDatas = await encodeBasicOrders([params], params.takerAddress, 0)
+                        if (tradeDatas?.length == 1) {
+                            data = tradeDatas[0].data
+                        }
+                    } else {
+                        const tx = await elementEx.populateTransaction.buyERC721(order, sig)
+                        data = tx?.data
+                    }
+                } else {
+                    const tx = await elementEx.populateTransaction.buyERC721Ex(order, sig, params.takerAddress, '0x')
+                    data = tx?.data
+                }
+                value = payValue
+            }
+        } else if (order['erc1155Token'] != null) {
+            // ERC1155Order
+            const { tokenId, payValue, quantity } = await this.checkAndApproveFillERC1155Order(params, gasParams)
+            if (order['erc1155TokenProperties'] != null) {
+                // sellERC1155
+                const unwrapNativeToken = order.erc20Token.toLowerCase() == this.WETH.toLowerCase()
+                const tx = await elementEx.populateTransaction.sellERC1155(order, sig, tokenId, quantity, unwrapNativeToken, '0x')
+                data = tx?.data
+            } else {
+                // buyERC1155
+                if (params.saleKind == SaleKind.FixedPrice) {
+                    const tx = await elementEx.populateTransaction.buyERC1155(order, sig, quantity)
+                    data = tx?.data
+                } else {
+                    const tx = await elementEx.populateTransaction.buyERC1155Ex(order, sig, params.takerAddress, quantity, '0x')
+                    data = tx?.data
+                }
+                value = payValue
+            }
+        } else {
+            throw Error('fillOrder failed, unsupported order.')
+        }
+        
+        if (!data) {
+            throw Error('fillOrder, populateTransaction failed.')
+        }
+        
+        const from = await this.web3Signer.getCurrentAccount()
+        const call: LimitedCallSpec = {
+            from: from,
+            to: elementEx.address,
+            data: data,
+            value: value,
+            gasPrice: gasParams.gasPrice,
+            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
+            maxFeePerGas: gasParams.maxFeePerGas
+        }
+        return this.web3Signer.ethSend(call)
+    }
+    
+    public async cancelERC721Orders(signedOrders: any[], gasParams: GasParams): Promise<TransactionResponse> {
+        const nonces: any [] = []
+        for (const signedOrder of signedOrders) {
+            nonces.push(signedOrder.order ? signedOrder.order.nonce : signedOrder.nonce)
+        }
+    
+        const elementEx = await this.getElementEx()
+        const tx = await elementEx.populateTransaction.batchCancelERC721Orders(nonces)
+        if (!tx?.data) {
+            throw Error('cancelOrder failed, populateTransaction error.')
+        }
+        const from = await this.web3Signer.getCurrentAccount()
+        const call: LimitedCallSpec = {
+            from: from,
+            to: elementEx.address,
+            data: tx.data,
+            gasPrice: gasParams.gasPrice,
+            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
+            maxFeePerGas: gasParams.maxFeePerGas
+        }
+        return this.web3Signer.ethSend(call)
     }
     
     public async createSellOrder(params: CreateOrderParams, gasParams: GasParams): Promise<ERC721Order | ERC1155Order> {
@@ -123,115 +217,21 @@ export class OrderManager {
         }
     }
     
-    public async fillOrder(params: FillParams, gasParams: GasParams): Promise<TransactionResponse> {
-        const order = params.order
-        const sig = params.signature
-        
-        let data, value
-        if (order['nft'] != null) {
-            // ERC721Order
-            const { tokenId, payValue } = await this.checkAndApproveFillERC721Order(params, gasParams)
-            if (order['nftProperties'] != null) {
-                // sellERC721
-                const unwrapNativeToken = order.erc20Token.toLowerCase() == this.WETH.toLowerCase()
-                const tx = await this.elementEx.populateTransaction.sellERC721(order, sig, tokenId, unwrapNativeToken, '0x')
-                data = tx?.data
-            } else {
-                // buyERC721
-                if (params.saleKind == SaleKind.FixedPrice) {
-                    if (
-                        toStandardERC20Token(params.order.erc20Token) == NULL_ADDRESS &&
-                        BigNumber.from(params.order.erc20TokenAmount).lte(MASK_96)
-                    ) {
-                        const tradeDatas = await encodeBasicOrders([params], params.takerAddress, 0)
-                        if (tradeDatas?.length == 1) {
-                            data = tradeDatas[0].data
-                        }
-                    } else {
-                        const tx = await this.elementEx.populateTransaction.buyERC721(order, sig)
-                        data = tx?.data
-                    }
-                } else {
-                    const tx = await this.elementEx.populateTransaction.buyERC721Ex(order, sig, params.takerAddress, '0x')
-                    data = tx?.data
-                }
-                value = payValue
-            }
-        } else if (order['erc1155Token'] != null) {
-            // ERC1155Order
-            const { tokenId, payValue, quantity } = await this.checkAndApproveFillERC1155Order(params, gasParams)
-            if (order['erc1155TokenProperties'] != null) {
-                // sellERC1155
-                const unwrapNativeToken = order.erc20Token.toLowerCase() == this.WETH.toLowerCase()
-                const tx = await this.elementEx.populateTransaction.sellERC1155(order, sig, tokenId, quantity, unwrapNativeToken, '0x')
-                data = tx?.data
-            } else {
-                // buyERC1155
-                if (params.saleKind == SaleKind.FixedPrice) {
-                    const tx = await this.elementEx.populateTransaction.buyERC1155(order, sig, quantity)
-                    data = tx?.data
-                } else {
-                    const tx = await this.elementEx.populateTransaction.buyERC1155Ex(order, sig, params.takerAddress, quantity, '0x')
-                    data = tx?.data
-                }
-                value = payValue
-            }
-        } else {
-            throw Error('fillOrder failed, unsupported order.')
-        }
-        
-        if (!data) {
-            throw Error('fillOrder, populateTransaction failed.')
-        }
-        
-        const from = await this.web3Signer.getCurrentAccount()
-        const call: LimitedCallSpec = {
-            from: from,
-            to: this.elementEx.address,
-            data: data,
-            value: value,
-            gasPrice: gasParams.gasPrice,
-            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
-            maxFeePerGas: gasParams.maxFeePerGas
-        }
-        return this.web3Signer.ethSend(call)
-    }
-    
-    public async cancelERC721Orders(signedOrders: any[], gasParams: GasParams): Promise<TransactionResponse> {
-        const nonces: any [] = []
-        for (const signedOrder of signedOrders) {
-            nonces.push(signedOrder.order ? signedOrder.order.nonce : signedOrder.nonce)
-        }
-        
-        const tx = await this.elementEx.populateTransaction.batchCancelERC721Orders(nonces)
-        if (!tx?.data) {
-            throw Error('cancelOrder failed, populateTransaction error.')
-        }
-        const from = await this.web3Signer.getCurrentAccount()
-        const call: LimitedCallSpec = {
-            from: from,
-            to: this.elementEx.address,
-            data: tx.data,
-            gasPrice: gasParams.gasPrice,
-            maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
-            maxFeePerGas: gasParams.maxFeePerGas
-        }
-        return this.web3Signer.ethSend(call)
-    }
-    
     public async cancelERC1155Orders(signedOrders: any[], gasParams: GasParams): Promise<TransactionResponse> {
         const nonces: any [] = []
         for (const signedOrder of signedOrders) {
             nonces.push(signedOrder.order.nonce)
         }
-        const tx = await this.elementEx.populateTransaction.batchCancelERC1155Orders(nonces)
+        
+        const elementEx = await this.getElementEx()
+        const tx = await elementEx.populateTransaction.batchCancelERC1155Orders(nonces)
         if (!tx?.data) {
             throw Error('cancelOrder failed, populateTransaction error.')
         }
         const from = await this.web3Signer.getCurrentAccount()
         const call: LimitedCallSpec = {
             from: from,
-            to: this.elementEx.address,
+            to: elementEx.address,
             data: tx.data,
             gasPrice: gasParams.gasPrice,
             maxPriorityFeePerGas: gasParams.maxPriorityFeePerGas,
@@ -241,15 +241,16 @@ export class OrderManager {
     }
     
     public async cancelAllOrders(gasParams?: GasParams): Promise<TransactionResponse> {
-        const tx = await this.elementEx.populateTransaction.incrementHashNonce()
+        const elementEx = await this.getElementEx()
+        const tx = await elementEx.populateTransaction.incrementHashNonce()
         if (!tx?.data) {
             throw Error('cancelAllOrders failed, populateTransaction error.')
         }
-        
+    
         const from = await this.web3Signer.getCurrentAccount()
         const call: LimitedCallSpec = {
             from: from,
-            to: this.elementEx.address,
+            to: elementEx.address,
             data: tx.data,
             gasPrice: gasParams?.gasPrice,
             maxPriorityFeePerGas: gasParams?.maxPriorityFeePerGas,
@@ -258,12 +259,24 @@ export class OrderManager {
         return this.web3Signer.ethSend(call)
     }
     
+    private async getElementEx() {
+        const signer = await this.web3Signer.getSigner()
+        return getElementExContract(this.web3Signer.chainId, signer)
+    }
+    
+    private async getHelper() {
+        const signer = await this.web3Signer.getSigner()
+        return getHelperContract(this.web3Signer.chainId, signer)
+    }
+    
     private async checkAndApproveSellOrder(order: ERC721Order | ERC1155Order, gasParams: GasParams) {
         const isERC721Order = order['nft'] != null
+        const helper = await this.getHelper()
+        const elementEx = await this.getElementEx()
         const r = isERC721Order
-            ? await this.helper.checkERC721SellOrder(order, NULL_ADDRESS)
-            : await this.helper.checkERC1155SellOrder(order, NULL_ADDRESS, '0')
-    
+            ? await helper.checkERC721SellOrder(order, NULL_ADDRESS)
+            : await helper.checkERC1155SellOrder(order, NULL_ADDRESS, '0')
+        
         order.hashNonce = r.info?.hashNonce?.toString()
         if (r.info.success) {
             return
@@ -298,7 +311,7 @@ export class OrderManager {
             }
             if (!r.info.erc721ApprovedCheck) {
                 console.log('start approveERC721, ERC721Address =', order['nft'])
-                const tx = await this.web3Signer.approveERC721Proxy(order.maker, order['nft'], this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC721Proxy(order.maker, order['nft'], elementEx.address, gasParams)
                 console.log('approveERC721, tx.hash', tx.hash)
                 await tx.wait()
                 console.log('approveERC721, completed.')
@@ -315,7 +328,7 @@ export class OrderManager {
             }
             if (!r.info.erc1155ApprovedCheck) {
                 console.log('start approveERC1155, ERC1155Address =', order['erc1155Token'])
-                const tx = await this.web3Signer.approveERC1155Proxy(order.maker, order['erc1155Token'], this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC1155Proxy(order.maker, order['erc1155Token'], elementEx.address, gasParams)
                 console.log('approveERC1155, tx.hash', tx.hash)
                 await tx.wait()
                 console.log('approveERC1155, completed.')
@@ -325,9 +338,11 @@ export class OrderManager {
     
     private async checkAndApproveBuyOrder(order: ERC721Order | ERC1155Order, gasParams: GasParams) {
         const isERC721Order = order['nft'] != null
+        const helper = await this.getHelper()
+        const elementEx = await this.getElementEx()
         const r = isERC721Order
-            ? await this.helper.checkERC721BuyOrder(order, NULL_ADDRESS, '0')
-            : await this.helper.checkERC1155BuyOrder(order, NULL_ADDRESS, '0', '0')
+            ? await helper.checkERC721BuyOrder(order, NULL_ADDRESS, '0')
+            : await helper.checkERC1155BuyOrder(order, NULL_ADDRESS, '0', '0')
     
         order.hashNonce = r.info?.hashNonce?.toString()
         if (r.info.success) {
@@ -370,7 +385,7 @@ export class OrderManager {
         }
         if (!r.info.erc20AllowanceCheck && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
             console.log('start approveERC20, ERC20Address =', order.erc20Token)
-            const tx = await this.web3Signer.approveERC20Proxy(order.maker, order.erc20Token, this.elementEx.address, gasParams)
+            const tx = await this.web3Signer.approveERC20Proxy(order.maker, order.erc20Token, elementEx.address, gasParams)
             console.log('approveERC20, tx.hash', tx.hash)
             await tx.wait(1)
             console.log('approveERC20, completed.')
@@ -382,7 +397,9 @@ export class OrderManager {
         const takerAddress = params.takerAddress
         let assetId = params.assetId
         let payValue = '0'
-        
+    
+        const helper = await this.getHelper()
+        const elementEx = await this.getElementEx()
         if (order.nftProperties != null) {
             if (!assetId) {
                 if (order.nftProperties.length > 0) {
@@ -390,8 +407,8 @@ export class OrderManager {
                 }
                 assetId = order.nftId
             }
-            
-            const r = await this.helper.checkERC721BuyOrder(order, takerAddress, assetId)
+        
+            const r = await helper.checkERC721BuyOrder(order, takerAddress, assetId)
             if (!r.info.nonceCheck) {
                 throw Error('fillOrder failed, the ERC721BuyOrder has filled.')
             }
@@ -402,7 +419,7 @@ export class OrderManager {
                 throw Error(`fillOrder failed, make sure account(${takerAddress}) is owner of assetId(${assetId}).`)
             }
             if (!r.takerCheckInfo.erc721ApprovedCheck) {
-                const tx = await this.web3Signer.approveERC721Proxy(takerAddress, order.nft, this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC721Proxy(takerAddress, order.nft, elementEx.address, gasParams)
                 await tx.wait()
             }
         } else {
@@ -410,8 +427,8 @@ export class OrderManager {
                 throw Error('fillOrder failed, assetId mismatch the ERC721SellOrder.nftId.')
             }
             assetId = order.nftId
-            
-            const r = await this.helper.checkERC721SellOrder(order, takerAddress)
+        
+            const r = await helper.checkERC721SellOrder(order, takerAddress)
             if (!r.info.nonceCheck) {
                 throw Error('fillOrder failed, the ERC721SellOrder has filled.')
             }
@@ -422,7 +439,7 @@ export class OrderManager {
                 throw Error(`fillOrder failed, make sure account${takerAddress} have enough balance of erc20Token(${order.erc20Token}).`)
             }
             if (!r.takerCheckInfo.allowanceCheck && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
-                const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, elementEx.address, gasParams)
                 await tx.wait()
             }
             if (order.erc20Token.toLowerCase() == ETH_TOKEN_ADDRESS) {
@@ -438,7 +455,10 @@ export class OrderManager {
         let assetId = params.assetId
         let payValue = '0'
         let quantity
-        
+    
+        const helper = await this.getHelper()
+        const elementEx = await this.getElementEx()
+    
         // fill ERC1155BuyOrder
         if (order.erc1155TokenProperties != null) {
             if (!assetId) {
@@ -447,15 +467,15 @@ export class OrderManager {
                 }
                 assetId = order.erc1155TokenId
             }
-            
-            const r = await this.helper.checkERC1155BuyOrder(order, takerAddress, assetId, '0')
+        
+            const r = await helper.checkERC1155BuyOrder(order, takerAddress, assetId, '0')
             if (!r.info.nonceCheck) {
                 throw Error('fillOrder failed, the ERC1155BuyOrder has filled.')
             }
             if (!r.info.expireTimeCheck) {
                 throw Error('fillOrder failed, the ERC1155BuyOrder has expired.')
             }
-            
+        
             if (params.quantity) {
                 quantity = params.quantity
                 if (BigNumber.from(quantity).gt(r.info.erc1155RemainingAmount)) {
@@ -476,7 +496,7 @@ export class OrderManager {
             }
             
             if (!r.takerCheckInfo.erc1155ApprovedCheck) {
-                const tx = await this.web3Signer.approveERC1155Proxy(takerAddress, order.erc1155Token, this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC1155Proxy(takerAddress, order.erc1155Token, elementEx.address, gasParams)
                 await tx.wait()
             }
         } else {
@@ -485,15 +505,15 @@ export class OrderManager {
                 throw Error('fillOrder failed, assetId mismatch the ERC1155SellOrder.erc1155TokenId')
             }
             assetId = order.erc1155TokenId
-            
-            const r = await this.helper.checkERC1155SellOrder(order, takerAddress, '0')
+        
+            const r = await helper.checkERC1155SellOrder(order, takerAddress, '0')
             if (!r.info.nonceCheck) {
                 throw Error('fillOrder failed, the ERC1155SellOrder has filled.')
             }
             if (!r.info.expireTimeCheck) {
                 throw Error('fillOrder failed, the ERC1155SellOrder has expired.')
             }
-            
+        
             if (params.quantity) {
                 quantity = params.quantity
                 if (BigNumber.from(quantity).gt(r.info.erc1155Balance)) {
@@ -526,7 +546,7 @@ export class OrderManager {
             }
             
             if (payAmount.gt(r.takerCheckInfo.erc20Allowance) && order.erc20Token.toLowerCase() != ETH_TOKEN_ADDRESS) {
-                const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, this.elementEx.address, gasParams)
+                const tx = await this.web3Signer.approveERC20Proxy(takerAddress, order.erc20Token, elementEx.address, gasParams)
                 await tx.wait()
             }
             

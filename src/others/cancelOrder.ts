@@ -8,15 +8,17 @@ export async function cancelSeaportOrders(signedOrders: any[], web3Signer: Web3S
     for (const signedOrder of signedOrders) {
         orders.push(signedOrder.parameters)
     }
-    const seaport = getSeaportContract(web3Signer.chainId)
+    
+    const signer = await web3Signer.getSigner()
+    const seaport = getSeaportContract(web3Signer.chainId, signer)
     const tx = await seaport.populateTransaction.cancel(orders)
     if (!tx?.data) {
         throw Error('cancelSeaportOrders failed, populateTransaction error.')
     }
     
-    const account = await web3Signer.getCurrentAccount()
+    const from = await signer.getAddress()
     const call: LimitedCallSpec = {
-        from: account,
+        from: from,
         to: seaport.address,
         data: tx.data,
         gasPrice: gasParams.gasPrice,
@@ -27,13 +29,14 @@ export async function cancelSeaportOrders(signedOrders: any[], web3Signer: Web3S
 }
 
 export async function cancelAllSeaportOrders(web3Signer: Web3Signer, gasParams?: GasParams): Promise<TransactionResponse> {
-    const seaport = getSeaportContract(web3Signer.chainId)
+    const signer = await web3Signer.getSigner()
+    const seaport = getSeaportContract(web3Signer.chainId, signer)
     const tx = await seaport.populateTransaction.incrementCounter()
     if (!tx?.data) {
         throw Error('cancelAllSeaportOrders failed, populateTransaction error.')
     }
     
-    const account = await web3Signer.getCurrentAccount()
+    const account = await signer.getAddress()
     const call: LimitedCallSpec = {
         from: account,
         to: seaport.address,
@@ -51,13 +54,14 @@ export async function cancelLooksRareOrders(signedOrders: any[], web3Signer: Web
         nonces.push(signedOrder.nonce)
     }
     
-    const looksRare = getLooksRareContract(web3Signer.chainId)
+    const signer = await web3Signer.getSigner()
+    const looksRare = getLooksRareContract(web3Signer.chainId, signer)
     const tx = await looksRare.populateTransaction.cancelMultipleMakerOrders(nonces)
     if (!tx?.data) {
         throw Error('cancelLooksRareOrders failed, populateTransaction error.')
     }
     
-    const account = await web3Signer.getCurrentAccount()
+    const account = await signer.getAddress()
     const call: LimitedCallSpec = {
         from: account,
         to: looksRare.address,
@@ -70,8 +74,9 @@ export async function cancelLooksRareOrders(signedOrders: any[], web3Signer: Web
 }
 
 export async function cancelAllLooksRareOrders(web3Signer: Web3Signer, gasParams?: GasParams): Promise<TransactionResponse> {
-    const account = await web3Signer.getCurrentAccount()
-    const looksRare = getLooksRareContract(web3Signer.chainId)
+    const signer = await web3Signer.getSigner()
+    const account = await signer.getAddress()
+    const looksRare = getLooksRareContract(web3Signer.chainId, signer)
     const minOrderNonce = await looksRare.userMinOrderNonce(account)
     const minNonce = minOrderNonce.add(499999)
     
