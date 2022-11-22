@@ -5,7 +5,8 @@ import {
     queryExchangeData,
     queryFees,
     queryNonce,
-    queryOrders
+    queryOrders,
+    queryTradeData
 } from './api/openApi'
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
 import {
@@ -32,14 +33,13 @@ import {
     Standard,
     TradeData
 } from './types/types'
-import { Web3Signer } from './signer/Web3Signer'
+import { LimitedCallSpec, Web3Signer } from './signer/Web3Signer'
 import { BatchSignedOrderManager, getSucceedList } from './element/batchSignedOrder/batchSignedOrderManager'
 import { OrderManager } from './element/order/orderManager'
 import { ApiOption, OrderQuery } from './api/openApiTypes'
 import { CreateOrderParams } from './element/order/orderTypes'
 import { toOrderInformation, toOrderRequest } from './element/order/orderConverter'
 import { toStandardERC20Token } from './util/tokenUtil'
-import { Swap } from './swap/swap'
 import {
     cancelAllLooksRareOrders,
     cancelAllSeaportOrders,
@@ -57,7 +57,6 @@ export class ElementSDK {
     public web3Signer: Web3Signer
     public batchOrderManager: BatchSignedOrderManager
     public orderManager: OrderManager
-    public swap: Swap
     public isTestnet: boolean = false
     
     constructor(config: ElementAPIConfig) {
@@ -73,7 +72,6 @@ export class ElementSDK {
         this.web3Signer = new Web3Signer(config.signer, this.chainId)
         this.batchOrderManager = new BatchSignedOrderManager(this.web3Signer, this.apiOption)
         this.orderManager = new OrderManager(this.web3Signer)
-        this.swap = new Swap(this.web3Signer)
     }
     
     public async makeERC721SellOrders(params: MakeERC721SellOrdersParams): Promise<MakeERC721SellOrdersResponse> {
@@ -93,7 +91,7 @@ export class ElementSDK {
                 
                 // 4. post order
                 const r = await postBatchSignedERC721SellOrder(signedOrder, this.apiOption)
-                succeedList.push(...getSucceedList(order, r.successList))
+                succeedList.push(...getSucceedList(signedOrder, r.successList))
                 failedList.push(...r.failList)
             } catch (e) {
                 error = e
@@ -197,28 +195,34 @@ export class ElementSDK {
     
     public async batchBuyWithETH(params: BatchBuyWithETHParams): Promise<TransactionResponse> {
         this.checkSellOrdersParams('batchBuyWithETH', params.orders)
-        const orders = await queryExchangeData(params.orders, this.apiOption)
-        if (!orders.length) {
-            throw Error('batchBuyWithETH failed, queryExchangeData error.')
+        const taker = await this.web3Signer.getCurrentAccount()
+        const tradeData = await queryTradeData(taker, params.orders, this.apiOption)
+    
+        const call: LimitedCallSpec = {
+            from: taker,
+            to: tradeData.to,
+            value: tradeData.value,
+            data: tradeData.data,
+            gasPrice: params.gasPrice,
+            maxPriorityFeePerGas: params.maxPriorityFeePerGas,
+            maxFeePerGas: params.maxFeePerGas
         }
-        const call = await this.swap.encodeTradeData('batchBuyWithETH', orders)
-        call.gasPrice = params.gasPrice
-        call.maxPriorityFeePerGas = params.maxPriorityFeePerGas
-        call.maxFeePerGas = params.maxFeePerGas
         return this.web3Signer.ethSend(call)
     }
     
     public async encodeTradeData(params: EncodeTradeDataParams): Promise<TradeData> {
         this.checkSellOrdersParams('encodeTradeData', params.orders)
-        const orders = await queryExchangeData(params.orders, this.apiOption)
-        if (!orders.length) {
-            throw Error('encodeTradeData failed, queryExchangeData error.')
+    
+        let taker = params.taker
+        if (taker == null || taker == '' || taker.toLowerCase() == NULL_ADDRESS) {
+            taker = await this.web3Signer.getCurrentAccount()
         }
-        const call = await this.swap.encodeTradeData('encodeTradeData', orders, params.taker)
+        const tradeData = await queryTradeData(taker, params.orders, this.apiOption)
         return {
-            toContract: call.to.toLowerCase(),
-            payableValue: toString(call.value),
-            data: call.data
+            toContract: tradeData.to,
+            payableValue: tradeData.value,
+            data: tradeData.data,
+            flags: tradeData.flags
         }
     }
     

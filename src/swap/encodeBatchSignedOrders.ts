@@ -319,8 +319,8 @@ function toCollectionsBytes(order: BatchSignedERC721OrderRequest, nonces: number
             let filledIndexListPart1 = '0'
             let filledIndexListPart2 = '0'
             if (filledIndexList.length > 0) {
-                if (collection.nftAddress != NULL_ADDRESS) {
-                    const key = collection.nftAddress.toLowerCase()
+                if (collection.royaltyFeeRecipient != NULL_ADDRESS) {
+                    const key = collection.royaltyFeeRecipient.toLowerCase()
                     const currentValue = royaltyFeeStat.get(key)
                     royaltyFeeStat.set(key, currentValue ? (currentValue + 1) : 1)
                 }

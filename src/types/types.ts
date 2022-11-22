@@ -80,6 +80,8 @@ export interface OrderInformation {
     saleKind: SaleKind | number | string;
     // Side of the order. 0 for buy order, and 1 for sell order.
     side: OrderSide | number | string;
+    // Order hash.
+    orderHash?: string;
 }
 
 export interface Order extends OrderInformation {
@@ -97,7 +99,6 @@ export interface OrderDetail extends Order {
     basePrice: string;
     exchangeData: string;
     errorDetail: string;
-    orderHash: string;
 }
 
 export interface GasParams {
@@ -161,6 +162,7 @@ export interface TradeData {
     toContract: string;
     payableValue: string;
     data: string;
+    flags: Array<boolean>;
 }
 
 export interface CancelOrderParams extends GasParams {

@@ -63,14 +63,27 @@ export async function postBatchSignedERC721SellOrder(order: BatchSignedERC721Ord
 export async function queryExchangeData(orders: OrderInformation[], option: ApiOption, retries = 1): Promise<Array<OrderDetail>> {
     let r
     try {
-        const list = toStandardOrders(orders, option)
-        r = await axios({
-            method: 'post',
-            url: toUrl('/openapi/v1/orders/fetchExchangeData', option),
-            headers: { 'x-api-key': option.apiKey },
-            data: list,
-            timeout: TIME_OUT
-        })
+        const { hashList, orderList } = toOrdersInput(orders, option)
+        if (hashList) {
+            r = await axios({
+                method: 'post',
+                url: toUrl('/openapi/v1/orders/fetchExchangeDataByHash', option),
+                headers: { 'x-api-key': option.apiKey },
+                data: {
+                    chain: option.chain,
+                    hashList: hashList
+                },
+                timeout: TIME_OUT
+            })
+        } else {
+            r = await axios({
+                method: 'post',
+                url: toUrl('/openapi/v1/orders/fetchExchangeData', option),
+                headers: { 'x-api-key': option.apiKey },
+                data: orderList,
+                timeout: TIME_OUT
+            })
+        }
     } catch (e) {
         if (shouldRetry(e, retries)) {
             console.log('queryExchangeData failed, ' + e + ', now try again.')
@@ -86,17 +99,18 @@ export async function queryExchangeData(orders: OrderInformation[], option: ApiO
     throw Error(`queryExchangeData failed, ${r.data?.code}, ${r.data?.msg}`)
 }
 
-export async function queryTradeData(account: string, orders: OrderInformation[], option: ApiOption, retries = 1): Promise<Array<SwapTradeData>> {
+export async function queryTradeData(account: string, orders: OrderInformation[], option: ApiOption, retries = 1): Promise<any> {
     let r
     try {
-        const list = toStandardOrders(orders, option)
+        const { hashList, orderList } = toOrdersInput(orders, option)
         r = await axios({
             method: 'post',
-            url: toUrl('/openapi/v1/orders/encodeTradeData', option),
+            url: toUrl('/openapi/v1/orders/encodeTradeDataByHash', option),
             headers: { 'x-api-key': option.apiKey },
             data: {
+                chain: option.chain,
                 buyer: account.toLowerCase(),
-                data: list
+                hashList: hashList ? hashList : orderList
             },
             timeout: TIME_OUT
         })
@@ -109,29 +123,49 @@ export async function queryTradeData(account: string, orders: OrderInformation[]
         throw Error(`encodeTradeData failed, ${e}`)
     }
     
-    if (r.data?.code === 0) {
-        return r.data.data?.encodeDataList || []
+    if (r.data?.code === 0 && r.data?.data) {
+        return r.data?.data
     }
     throw Error(`encodeTradeData failed, ${r.data?.code}, ${r.data?.msg}`)
 }
 
-function toStandardOrders(orders: OrderInformation[], option: ApiOption): OrderInformation[] {
-    return orders.map((item, index, array) => {
-        return {
-            chain: option.chain,
-            contractAddress: formatVal(item.contractAddress),
-            tokenId: formatVal(item.tokenId),
-            schema: item.schema.toString().toLowerCase(),
-            standard: item.standard.toString().toLowerCase(),
-            maker: formatVal(item.maker),
-            listingTime: Number(item.listingTime),
-            expirationTime: Number(item.expirationTime),
-            price: Number(item.price),
-            paymentToken: formatVal(item.paymentToken),
-            saleKind: Number(item.saleKind),
-            side: Number(item.side)
-        } as OrderInformation
-    })
+function toOrdersInput(orders: OrderInformation[], option: ApiOption) {
+    let useOrderHash = true
+    for (const order of orders) {
+        if (!order.orderHash) {
+            useOrderHash = false
+            break
+        }
+    }
+    
+    let hashList
+    let orderList
+    if (useOrderHash) {
+        hashList = orders.map((item, index, array) => {
+            return {
+                standard: item.standard.toString().toLowerCase(),
+                orderHash: item.orderHash?.toLowerCase()
+            }
+        })
+    } else {
+        orderList = orders.map((item, index, array) => {
+            return {
+                chain: option.chain,
+                contractAddress: formatVal(item.contractAddress),
+                tokenId: formatVal(item.tokenId),
+                schema: item.schema.toString().toLowerCase(),
+                standard: item.standard.toString().toLowerCase(),
+                maker: formatVal(item.maker),
+                listingTime: Number(item.listingTime),
+                expirationTime: Number(item.expirationTime),
+                price: Number(item.price),
+                paymentToken: formatVal(item.paymentToken),
+                saleKind: Number(item.saleKind),
+                side: Number(item.side)
+            } as OrderInformation
+        })
+    }
+    return { hashList, orderList }
 }
 
 export async function queryNonce(query: NonceQuery, option: ApiOption, retries = 1): Promise<number> {

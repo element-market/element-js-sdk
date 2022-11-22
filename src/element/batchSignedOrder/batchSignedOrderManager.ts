@@ -180,17 +180,19 @@ export class BatchSignedOrderManager {
     }
 }
 
-export function getSucceedList(order: BatchSignedERC721Order, assets: any[]): OrderInformation[] {
+export function getSucceedList(order: BatchSignedERC721OrderRequest, assets: any[]): OrderInformation[] {
     if (assets.length == 0) {
         return []
     }
-
+    
     const map: Map<string, any> = new Map
+    let nonce = Number(order.startNonce)
     for (const collection of order.basicCollections) {
         for (const item of collection.items) {
             const key = (collection.nftAddress + ',' + item.nftId).toLowerCase()
             const value = {
-                erc20TokenAmount: item.erc20TokenAmount
+                erc20TokenAmount: item.erc20TokenAmount,
+                nonce: nonce++
             }
             map.set(key, value)
         }
@@ -199,7 +201,8 @@ export function getSucceedList(order: BatchSignedERC721Order, assets: any[]): Or
         for (const item of collection.items) {
             const key = (collection.nftAddress + ',' + item.nftId).toLowerCase()
             const value = {
-                erc20TokenAmount: item.erc20TokenAmount
+                erc20TokenAmount: item.erc20TokenAmount,
+                nonce: nonce++
             }
             map.set(key, value)
         }
@@ -223,7 +226,8 @@ export function getSucceedList(order: BatchSignedERC721Order, assets: any[]): Or
                 price: Number(ethers.utils.formatEther(value.erc20TokenAmount)),
                 paymentToken: order.paymentToken,
                 saleKind: SaleKind.BatchSignedERC721Order,
-                side: OrderSide.SellOrder
+                side: OrderSide.SellOrder,
+                orderHash: order.hash + '_' + value.nonce
             })
         }
     }

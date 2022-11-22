@@ -22,7 +22,8 @@ export function toOrderInformation(order: OrderRequest): OrderInformation {
         price: Number(ethers.utils.formatEther(price)),
         paymentToken: order.paymentToken,
         saleKind: order.saleKind,
-        side: order.side
+        side: order.side,
+        orderHash: order.hash
     }
 }
 
