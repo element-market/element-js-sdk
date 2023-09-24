@@ -1,5 +1,5 @@
 import { createSDK, privateKeys } from './0.config'
-import { NULL_ADDRESS } from '../lib'
+import { NULL_ADDRESS } from '../src/types/types'
 
 async function test() {
     const sdk1 = createSDK(privateKeys[1])

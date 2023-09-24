@@ -6,8 +6,6 @@ import { NULL_ADDRESS, OrderDetail, SaleKind, Standard } from '../types/types'
 import { BatchSignedERC721OrderResponse } from '../element/batchSignedOrder/batchSignedTypes'
 import { encodeBits } from '../util/bitsUtil'
 import { getElementMarketId } from '../util/marketUtil'
-import { encodeSeaportOrder } from './encodeSeaportOrders'
-import { encodeLooksRareOrder } from './encodeLooksRareOrders'
 import { encodeBatchSignedOrders } from './encodeBatchSignedOrders'
 import { encodeBasicOrders } from './encodeBasicOrders'
 import { encodeOrder } from './encodeOrders'
@@ -98,16 +96,6 @@ export class Swap {
                             list.push(tradeDetail)
                         }
                     }
-                }
-            } else if (standard == Standard.Seaport) {
-                if (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) {
-                    const tradeDetail = await encodeSeaportOrder(order.exchangeData, taker)
-                    list.push(tradeDetail)
-                }
-            } else if (standard == Standard.LooksRare) {
-                if (this.web3Signer.chainId == 1 || this.web3Signer.chainId == 5) {
-                    const tradeDetail = await encodeLooksRareOrder(order.exchangeData, taker)
-                    list.push(tradeDetail)
                 }
             }
         }

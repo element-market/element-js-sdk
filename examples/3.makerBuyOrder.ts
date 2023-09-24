@@ -1,5 +1,5 @@
 import { createSDK, privateKeys } from './0.config'
-import { AssetSchema, OrderSide, SaleKind } from '../src/types/types'
+import { AssetSchema } from '../src/types/types'
 import { ethers } from 'ethers'
 
 async function test() {

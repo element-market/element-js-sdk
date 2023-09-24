@@ -3,8 +3,7 @@ import { ethers } from 'ethers'
 import { Network } from '../src/types/types'
 import { RPC_URLS } from '../src/contracts/config'
 import { getChainId } from '../src/util/chainUtil'
-import { TimeoutWeb3Provider } from './TimeoutWeb3Provider'
-import { TimeoutJsonRpcProvider } from './TimeoutJsonRpcProvider'
+import { Web3Provider, JsonRpcProvider } from '@ethersproject/providers'
 
 const apiKey = ''
 export const privateKeys = [
@@ -25,12 +24,12 @@ export function createSDK(privateKey?: string) {
             isTestnet: isTestnet,
             apiKey: apiKey,
             // @ts-ignore
-            signer: new TimeoutWeb3Provider(window['ethereum'])
+            signer: new Web3Provider(window['ethereum'])
         })
     } else {
         // node.js
         // @ts-ignore
-        const provider = new TimeoutJsonRpcProvider(RPC_URLS[chainId])
+        const provider = new JsonRpcProvider(RPC_URLS[chainId])
         const signer = new ethers.Wallet(privateKey as string, provider)
         return new ElementSDK({
             networkName: network,
