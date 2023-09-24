@@ -1,10 +1,4 @@
-<p align="center">
-  <img src="https://www.element.market/build/logo-header-268a92cd.svg" height="60"/>
-</p>
-
 # Element.js <!-- omit in toc -->
-
-![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)
 
 A JavaScript library for element.market: buy, sell, make offer on any NFTs. With Element.js, you can easily build yourown NFT marketplace. Trade ERC721 or ERC1155 items. You don't have to deploy your own smart contracts or off-chain orderbooks.
 
