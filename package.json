@@ -1,6 +1,6 @@
 {
   "name": "element-js-sdk",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Javascript SDK for the www.element.market",
   "main": "lib/index.js",
   "type": "lib/index.d.ts",

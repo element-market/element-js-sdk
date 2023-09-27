@@ -2,6 +2,10 @@ export { ElementSDK } from './src/index'
 export { ethers, providers, Signer, BigNumber } from 'ethers'
 export type { TransactionResponse, TransactionReceipt } from '@ethersproject/abstract-provider'
 
+export type {
+    OrderQuery
+} from './src/api/openApiTypes'
+
 export {
     NULL_ADDRESS,
     ETH_TOKEN_ADDRESS,
