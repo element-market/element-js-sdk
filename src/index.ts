@@ -399,7 +399,8 @@ export class ElementSDK {
         }
         const assetId = toString(params.assetId) || undefined
         const accountAddress = await this.web3Signer.getCurrentAccount()
-        
+        const takerAddress = params.takerAddress ? params.takerAddress.toLowerCase() : NULL_ADDRESS
+    
         // 1. query nonce
         const nonce = await queryNonce({
             maker: accountAddress,
@@ -408,20 +409,22 @@ export class ElementSDK {
         }, this.apiOption)
         
         // 2. queryFees
-        const fees = await queryFees([params.assetAddress], this.apiOption)
         let platformFeePoint, platformFeeAddress, royaltyFeePoint, royaltyFeeAddress
-        if (fees.length > 0) {
-            platformFeePoint = fees[0].protocolFeePoints
-            platformFeeAddress = fees[0].protocolFeeAddress
-            royaltyFeePoint = fees[0].royaltyFeePoints
-            royaltyFeeAddress = fees[0].royaltyFeeAddress
+        if (takerAddress === NULL_ADDRESS) {
+            const fees = await queryFees([params.assetAddress], this.apiOption)
+            if (fees.length > 0) {
+                platformFeePoint = fees[0].protocolFeePoints
+                platformFeeAddress = fees[0].protocolFeeAddress
+                royaltyFeePoint = fees[0].royaltyFeePoints
+                royaltyFeeAddress = fees[0].royaltyFeeAddress
+            }
         }
         
         // 3. create order
         const quantity = params.quantity != null ? toString(params.quantity) : undefined
         const orderParams: CreateOrderParams = {
             makerAddress: accountAddress,
-            takerAddress: params.takerAddress ? params.takerAddress : NULL_ADDRESS,
+            takerAddress,
             asset: {
                 id: assetId,
                 address: params.assetAddress,
