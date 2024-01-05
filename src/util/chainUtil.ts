@@ -12,6 +12,10 @@ const CHAIN_NAMES: { [key: number]: string } = {
     59144: Network.Linea,
     8453: Network.Base,
     204: Network.OpBNB,
+    534352: Network.Scroll,
+    169: Network.MantaPacific,
+    10: Network.Optimism,
+    5000: Network.Mantle,
 }
 
 export function getChain(chainId: number): string {
@@ -59,6 +63,18 @@ export function getChainId(chain: any, isTestnet = false): number {
     
             case Network.OpBNB:
                 return 204
+    
+            case Network.Scroll:
+                return 534352
+    
+            case Network.MantaPacific:
+                return 169
+    
+            case Network.Optimism:
+                return 10
+    
+            case Network.Mantle:
+                return 5000
         }
         throw Error('getChainId, unsupported chain : ' + chain)
     }

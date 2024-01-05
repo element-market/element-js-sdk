@@ -16,6 +16,10 @@ export enum Network {
     Linea = 'linea',
     Base = 'base',
     OpBNB = 'opbnb',
+    Scroll = 'scroll',
+    MantaPacific = 'manta_pacific',
+    Optimism = 'optimism',
+    Mantle = 'mantle',
 }
 
 export enum OrderSide {

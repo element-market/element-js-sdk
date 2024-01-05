@@ -106,6 +106,30 @@ export const CONTRACTS_ADDRESSES = {
         ElementExSwapV2: '0x8629E04a83902721FBD816fE9d41FD2053DAC79b',
         Helper: '0x3c19784F5247ca471E27eA1C604b48D266eb000C',
         WToken: '0x4200000000000000000000000000000000000006'
+    },
+    10: { // optimism
+        ElementEx: '0x2317d8b224328644759319dffa2a5da77c72e0e9',
+        ElementExSwapV2: '0xc9605a76b0370e148b4a510757685949f13248c7',
+        Helper: '0xbe6461385106793d2099399358d233c934d41581',
+        WToken: '0x4200000000000000000000000000000000000006'
+    },
+    534352: { // scroll
+        ElementEx: '0x0cab6977a9c70e04458b740476b498b214019641',
+        ElementExSwapV2: '0x217efe077801387d125fe98e1b61cdda4d1364d2',
+        Helper: '0x17bab823e1b4716f9bbe9eefc274f55ddf4056fd',
+        WToken: '0x5300000000000000000000000000000000000004'
+    },
+    169: {  // manta
+        ElementEx: '0x0cab6977a9c70e04458b740476b498b214019641',
+        ElementExSwapV2: '0xbcfa22a36e555c507092ff16c1af4cb74b8514c8',
+        Helper: '0x4bd6ff0413a095a79a855d83399a4850476be81e',
+        WToken: '0x0dc808adce2099a9f62aa87d9670745aba741746'
+    },
+    5000: {  // mantle
+        ElementEx: '0x2fa13cf695ec51ded5b8e45ad0bef838ab17e2af',
+        ElementExSwapV2: '0x9f47921d360aee0651a4f1ed2c4892b4923f9e52',
+        Helper: '0x4c95419b74d420841caaad6345799522475f91d2',
+        WToken: '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8'
     }
 }
 
@@ -126,5 +150,9 @@ export const RPC_URLS = {
     59140: 'https://rpc.goerli.linea.build',
     8453: 'https://mainnet.base.org',
     84531: 'https://goerli.base.org',
-    204: 'https://opbnb-mainnet-rpc.bnbchain.org'
+    204: 'https://opbnb-mainnet-rpc.bnbchain.org',
+    10: 'https://mainnet.optimism.io',
+    534352: 'https://rpc.scroll.io',
+    169: 'https://pacific-rpc.manta.network/http',
+    5000: 'https://rpc.mantle.xyz',
 }
