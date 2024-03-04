@@ -27,18 +27,18 @@ async function test() {
     })
     console.log("succeedList, ", r.succeedList)
     console.log("failedList, ", r.failedList)
-
-    // 2. batchBuyWithETH
-    const tx = await sdk1.batchBuyWithETH({
-        orders: r.succeedList
-    })
-    console.log('tx.hash: ', tx.hash)
-    const receipt = await tx.wait(1)
-    console.log('completed， gasUsed: ', receipt.gasUsed.toString())
-
-    // 3. getBoughtAssets
-    const assets = sdk1.getBoughtAssets(receipt)
-    console.log('assets: ', assets)
+    //
+    // // 2. batchBuyWithETH
+    // const tx = await sdk1.batchBuyWithETH({
+    //     orders: r.succeedList
+    // })
+    // console.log('tx.hash: ', tx.hash)
+    // const receipt = await tx.wait(1)
+    // console.log('completed， gasUsed: ', receipt.gasUsed.toString())
+    //
+    // // 3. getBoughtAssets
+    // const assets = sdk1.getBoughtAssets(receipt)
+    // console.log('assets: ', assets)
 }
 
 test()

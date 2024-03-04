@@ -130,7 +130,19 @@ export const CONTRACTS_ADDRESSES = {
         ElementExSwapV2: '0x9f47921d360aee0651a4f1ed2c4892b4923f9e52',
         Helper: '0x4c95419b74d420841caaad6345799522475f91d2',
         WToken: '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8'
-    }
+    },
+    42766: { // zkfair
+        ElementEx: '0x0cab6977a9c70e04458b740476b498b214019641',
+        ElementExSwapV2: '0xc9605a76b0370e148b4a510757685949f13248c7',
+        Helper: '0x0fd3d35c4536134e48a6bc05558b8d870878e119',
+        WToken: '0xd33db7ec50a98164cc865dfaa64666906d79319c'
+    },
+    81457: { // blast
+        ElementEx: '0x4196b39157659bf0de9ebf6e505648b7889a39ce',
+        ElementExSwapV2: '0xe29799ca0b98ba41343a4ea52fe15ed7d5e05662',
+        Helper: '0x0fd3d35c4536134e48a6bc05558b8d870878e119',
+        WToken: '0x4300000000000000000000000000000000000004'
+    },
 }
 
 export const RPC_URLS = {
@@ -155,4 +167,6 @@ export const RPC_URLS = {
     534352: 'https://rpc.scroll.io',
     169: 'https://pacific-rpc.manta.network/http',
     5000: 'https://rpc.mantle.xyz',
+    42766: 'https://rpc.zkfair.io',
+    81457: 'https://blast.blockpi.network/v1/rpc/public',
 }

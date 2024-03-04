@@ -20,6 +20,8 @@ export enum Network {
     MantaPacific = 'manta_pacific',
     Optimism = 'optimism',
     Mantle = 'mantle',
+    ZKFair = 'zkfair',
+    Blast = 'blast',
 }
 
 export enum OrderSide {
