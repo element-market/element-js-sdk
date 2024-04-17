@@ -1,5 +1,5 @@
 import { createSDK, privateKeys } from './0.config'
-import { NULL_ADDRESS, OrderSide } from '../src/types/types'
+import { NULL_ADDRESS } from '../src/types/types'
 
 async function test() {
   const sdk1 = createSDK(privateKeys[1])
@@ -7,18 +7,17 @@ async function test() {
   // 1. query element orders
   const orders = await sdk1.queryOrders({
     asset_contract_address: '0xd077bd42b79eB45F6eC24d025c6025B9749215CE',
-    payment_token: NULL_ADDRESS,
-    side: OrderSide.SellOrder
+    payment_token: NULL_ADDRESS
   })
   console.log('orders, ', orders)
   
-  // 2. encodeTradeData
-  const tradeData = await sdk1.encodeTradeData({
-    orders: orders
-    // quantities: [],  // optional
-    // tokenIds: [],    // optional
+  // 2. batchBuyWithETH
+  const tx = await sdk1.batchBuyWithETH({
+    orders: [ orders[0] ]
   })
-  console.log('tradeData: ', tradeData)
+  console.log('tx.hash: ', tx.hash)
+  const receipt = await tx.wait()
+  console.log('completed， gasUsed: ', receipt.gasUsed.toString())
 }
 
 test()

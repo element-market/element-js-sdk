@@ -213,7 +213,8 @@ To buy a bulk of NFTs, call `batchBuyWithETH`:
 ```JavaScript
 const orders = await sdk.queryOrders({ ... });
 const transaction = await sdk.batchBuyWithETH({
-  orders: orders
+  orders: orders,
+  quantities: [1, 100]  // Optional. The default quantity is 1.
 });
 console.log("tx.hash: ", transaction.hash);
 
@@ -250,7 +251,7 @@ const receipt = await transaction.wait();
 console.log("completed.");
 ```
 
-For the ERC-1155 asset order, the default `quantity` is all the remaining quantity. You can also set the `quantity` if needed. To do that, it's just call like below:
+For the ERC-1155 asset order, the default `quantity` is 1. You can also set the `quantity` if needed. To do that, it's just call like below:
 
 ```JavaScript
 const quantity = '5000';

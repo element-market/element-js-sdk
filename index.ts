@@ -22,7 +22,6 @@ export type {
     ElementAPIConfig,
     OrderInformation,
     Order,
-    OrderDetail,
     GasParams,
     ERC721SellOrderItem,
     MakeERC721SellOrdersParams,
